@@ -35,7 +35,7 @@ StoryShot은 **사진 + 텍스트로 인스타 스토리/카카오톡 프로필/
 #### 1. 기본 메타데이터 (`src/app/layout.tsx`)
 
 - `Metadata`를 이용해 기본 SEO 정보를 설정했습니다.
-  - `title`: `"StoryShot – 오늘의 한 줄 인스타 스토리 카드 생성기"`  
+  - `title`: `"StoryShot – 오늘의 한 줄 인스타 스토리 카드 생성기"`
   - `description`: 인스타 스토리/카카오톡/블로그 썸네일 용도 중심으로 작성
   - `keywords`: `"StoryShot", "스토리샷", "인스타 스토리 카드", "오늘의 한 줄" 등`
   - `alternates.canonical`: `/`
@@ -91,9 +91,91 @@ export default function sitemap(): MetadataRoute.Sitemap {
 ```text
 google-site-verification: googleaffbcddc16034708.html
 ```
-
 - 배포 후 `https://storyshot.vercel.app/googleaffbcddc16034708.html` 에 접근 가능  
   → GSC에서 HTML 파일 방식으로 소유권 확인
+
+---
+
+### Analytics & 광고 수익화 설정
+
+#### 1. Google Analytics 4 연동
+
+- GA4 데이터 스트림(웹) 생성 후 발급받은 **측정 ID (`G-XXXX...`)** 를 사용했습니다.
+- `NEXT_PUBLIC_GA_MEASUREMENT_ID` 환경 변수를 통해 ID를 주입합니다.
+- `src/app/layout.tsx`에서 `next/script`를 사용해 gtag를 초기화합니다.
+
+```ts
+const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="ko">
+      <body>
+        {gaId && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+              strategy="afterInteractive"
+            />
+            <Script id="ga-init" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${gaId}');
+              `}
+            </Script>
+          </>
+        )}
+        {children}
+      </body>
+    </html>
+  );
+}
+```
+
+- 기본 **페이지뷰/세션/기본 이벤트**를 수집하며, 향후 필요 시 `gtag('event', 'download_card', {...})` 형태로 커스텀 이벤트를 추가해 행동 단위 트래킹이 가능합니다.
+
+#### 2. Google AdSense 연동
+
+- AdSense 사이트 등록 및 `ca-pub-...` 퍼블리셔 ID를 사용해 전역 스크립트를 로드합니다.
+- 서명 메타 태그:
+
+```ts
+export const metadata: Metadata = {
+  // ...
+  other: {
+    "google-adsense-account": "ca-pub-8116400352006173",
+  },
+};
+```
+
+- 전역 스크립트는 `next/script`로 한 번만 로드합니다.
+- 광고 배너용 재사용 컴포넌트(`src/components/AdBanner.tsx`)를 만들어 페이지 어디에서나 간단히 삽입 가능합니다.
+
+```tsx
+export function AdBanner({ adSlot }: { adSlot: string }) {
+  useEffect(() => {
+    if (!adSlot || adSlot.startsWith("REPLACE_")) return;
+    (window.adsbygoogle = window.adsbygoogle || []).push({});
+  }, [adSlot]);
+
+  return (
+    <div className="min-h-[90px] w-full rounded-xl bg-slate-100/80">
+      <ins
+        className="adsbygoogle"
+        style={{ display: "block" }}
+        data-ad-client="ca-pub-8116400352006173"
+        data-ad-slot={adSlot}
+        data-ad-format="auto"
+        data-full-width-responsive="true"
+      />
+    </div>
+  );
+}
+```
+
+- 실제 운영 시에는 AdSense에서 발급된 **광고 단위 슬롯 ID** 를 `adSlot`에 전달하여 배너를 노출합니다.
 
 ---
 

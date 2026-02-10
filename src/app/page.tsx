@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import * as htmlToImage from "html-to-image";
 import type { StoryFormState, GradientId } from "../components/StoryCardPreview";
+import { AdBanner } from "../components/AdBanner";
 
 const initialState: StoryFormState = {
     textMain: "오늘은 여기까지. 그래도 잘했다.",
@@ -91,6 +92,9 @@ export default function Home() {
                         블로그 글 썸네일에 바로 쓸 수 있는 9:16 비율의 스토리 카드를 만들어 드립니다.
                     </p>
                 </header>
+
+                {/* 구글 에드센스: 승인 후 AdSense에서 광고 단위 생성 → adSlot을 해당 슬롯 ID로 교체 */}
+                <AdBanner adSlot="REPLACE_WITH_YOUR_SLOT_ID" className="my-2" />
 
                 <main className="grid gap-6 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1.2fr)]">
                     {/* 폼 영역 */}
