@@ -83,10 +83,12 @@ export default function Home() {
         <div className="min-h-screen bg-slate-50 px-4 py-10 text-slate-900 page-shell">
             <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
                 <header className="flex flex-col gap-2">
-                    <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">오늘의 한 줄 스토리 카드</h1>
+                    <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+                        StoryShot – 오늘의 한 줄 인스타 스토리 카드 만들기
+                    </h1>
                     <p className="max-w-2xl text-sm text-slate-600 sm:text-base">
-                        사진 또는 배경을 고르고, 오늘을 담고 싶은 한 줄을 적어보세요. 인스타 스토리, 카톡 프로필, 블로그
-                        글 썸네일로 쓸 수 있는 9:16 비율의 이미지를 만들어 드립니다.
+                        사진 또는 배경을 고르고, 오늘을 담고 싶은 한 줄을 적어보세요. 인스타 스토리, 카카오톡 프로필,
+                        블로그 글 썸네일에 바로 쓸 수 있는 9:16 비율의 스토리 카드를 만들어 드립니다.
                     </p>
                 </header>
 
