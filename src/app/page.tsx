@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import * as htmlToImage from "html-to-image";
+import type { StoryFormState, GradientId } from "../components/StoryCardPreview";
 
 const initialState: StoryFormState = {
     textMain: "오늘은 여기까지. 그래도 잘했다.",
