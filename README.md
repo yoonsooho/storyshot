@@ -5,6 +5,10 @@ StoryShot은 **사진 + 텍스트로 인스타 스토리/카카오톡 프로필/
 - **Live**: https://storyshot.vercel.app/
 - **Stack**: Next.js (App Router), React, TypeScript, Tailwind CSS v4
 
+예시 썸네일(OG 이미지):
+
+![StoryShot OG Image](./public/og-card.png)
+
 ---
 
 ### 주요 기능
