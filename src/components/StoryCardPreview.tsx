@@ -4,6 +4,15 @@ export type BackgroundType = "gradient" | "image";
 export type MoodId = "calm" | "happy" | "tired" | "focused";
 export type GradientId = "sunset" | "ocean" | "mono";
 
+export type CardAspectId =
+  | "9_16"
+  | "4_5"
+  | "3_4"
+  | "1_1"
+  | "3_2"
+  | "4_3"
+  | "16_9";
+
 export interface StoryFormState {
   textMain: string;
   textSecondary: string;
@@ -13,6 +22,18 @@ export interface StoryFormState {
   gradient: GradientId;
   imageDataUrl: string | null;
   imageFileName: string | null;
+  /** 0~100, 사진 배경일 때 어두운 오버레이 강도 */
+  overlayIntensity?: number;
+  /** 메인 문장 텍스트 색상 (CSS color) */
+  textMainColor?: string;
+  /** 보조 문장 텍스트 색상 (CSS color) */
+  textSecondaryColor?: string;
+  /** 날짜 텍스트 색상 (CSS color) */
+  dateColor?: string;
+  /** 오늘의 기분 뱃지 텍스트 색상 (CSS color) */
+  moodColor?: string;
+  /** 카드 비율 (기본 9:16) */
+  cardAspect?: CardAspectId;
 }
 
 export interface StoryCardPreviewProps {
@@ -29,6 +50,23 @@ export function StoryCardPreview({ form, cardRef }: StoryCardPreviewProps) {
       : "linear-gradient(145deg, #020617 0%, #111827 40%, #4b5563 100%)";
 
   const showImage = form.backgroundType === "image" && form.imageDataUrl;
+  const overlayIntensity = (form.overlayIntensity ?? 85) / 100;
+  const mainColor = form.textMainColor || "#f9fafb";
+  const secondaryColor = form.textSecondaryColor || "#e5e7eb";
+  const dateColor = form.dateColor || "#f9fafb";
+  const moodColor = form.moodColor || "#f9fafb";
+
+  const aspectRatioMap: Record<CardAspectId, string> = {
+    "9_16": "9 / 16",
+    "4_5": "4 / 5",
+    "3_4": "3 / 4",
+    "1_1": "1 / 1",
+    "3_2": "3 / 2",
+    "4_3": "4 / 3",
+    "16_9": "16 / 9",
+  };
+  const aspectRatio = aspectRatioMap[form.cardAspect ?? "9_16"];
+  const isLandscape = form.cardAspect === "3_2" || form.cardAspect === "4_3" || form.cardAspect === "16_9";
 
   const moodLabel =
     form.mood === "happy"
@@ -45,10 +83,12 @@ export function StoryCardPreview({ form, cardRef }: StoryCardPreviewProps) {
   return (
     <div
       ref={cardRef}
-      className="relative aspect-[9/16] w-full max-w-[360px] overflow-hidden rounded-[32px] shadow-md"
+      className="relative w-full overflow-hidden rounded-[32px] shadow-md"
       style={{
         background: gradientBackground,
         border: "1px solid rgba(15,23,42,0.4)",
+        aspectRatio,
+        maxWidth: isLandscape ? "520px" : "380px",
       }}
     >
       <div className="relative h-full w-full">
@@ -66,7 +106,11 @@ export function StoryCardPreview({ form, cardRef }: StoryCardPreviewProps) {
           style={{
             zIndex: 5,
             background: showImage
-              ? "linear-gradient(to top, rgba(15,23,42,0.9), rgba(15,23,42,0.78), rgba(15,23,42,0.94))"
+              ? `linear-gradient(to top,
+                  rgba(15,23,42,${0.9 * overlayIntensity}),
+                  rgba(15,23,42,${0.78 * overlayIntensity}),
+                  rgba(15,23,42,${0.94 * overlayIntensity})
+                )`
               : "radial-gradient(circle at 0% 0%, rgba(248,250,252,0.15), transparent 55%), radial-gradient(circle at 100% 100%, rgba(15,23,42,0.85), rgba(15,23,42,0.95))",
           }}
         />
@@ -76,38 +120,37 @@ export function StoryCardPreview({ form, cardRef }: StoryCardPreviewProps) {
           style={{ zIndex: 10 }}
         >
           <div className="flex items-start justify-between gap-3">
-            <div className="inline-flex items-center gap-2 rounded-full bg-black/35 px-3 py-1 text-[11px] backdrop-blur-sm">
+            <div
+              className="inline-flex items-center gap-2 rounded-full bg-black/35 px-3 py-1 text-[11px] backdrop-blur-sm"
+              style={{ color: moodColor }}
+            >
               <span>{moodEmoji}</span>
               <span className="uppercase tracking-[0.16em]">{moodLabel}</span>
-            </div>
-            <div className="rounded-full bg-black/35 px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] backdrop-blur-sm">
-              Today
             </div>
           </div>
 
           <div className="mt-6 flex flex-1 flex-col justify-center">
             <p
               className="text-balance text-lg font-semibold leading-relaxed sm:text-xl"
-              style={{ textShadow: "0 1px 6px rgba(15,23,42,0.9)" }}
+              style={{ textShadow: "0 1px 6px rgba(15,23,42,0.9)", color: mainColor }}
             >
               {form.textMain || "오늘을 한 문장으로 남겨보세요."}
             </p>
             {form.textSecondary && (
               <p
-                className="mt-3 text-[13px] leading-relaxed text-slate-200/85"
-                style={{ textShadow: "0 1px 4px rgba(15,23,42,0.8)" }}
+                className="mt-3 text-[13px] leading-relaxed"
+                style={{ textShadow: "0 1px 4px rgba(15,23,42,0.8)", color: secondaryColor }}
               >
                 {form.textSecondary}
               </p>
             )}
           </div>
 
-          <div className="mt-4 flex items-end justify-between text-[11px]">
-            <div className="flex flex-col">
-              <span className="uppercase tracking-[0.18em] text-slate-200/80">Invite Card Web</span>
-              <span className="mt-0.5 text-[10px] text-slate-300/75">One line, one moment.</span>
-            </div>
-            <div className="rounded-full bg-black/35 px-3 py-1 text-[11px] font-medium text-slate-100 backdrop-blur-sm">
+          <div className="mt-4 flex items-end justify-end text-[11px]">
+            <div
+              className="rounded-full bg-black/35 px-3 py-1 text-[11px] font-medium backdrop-blur-sm"
+              style={{ color: dateColor }}
+            >
               {form.date || "오늘"}
             </div>
           </div>
