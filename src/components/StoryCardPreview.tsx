@@ -34,7 +34,35 @@ export interface StoryFormState {
   moodColor?: string;
   /** 카드 비율 (기본 9:16) */
   cardAspect?: CardAspectId;
+  /** 글자 블록 위치 (카드 내 %). 드래그로 변경 가능 */
+  positionMood?: { x: number; y: number };
+  positionMain?: { x: number; y: number };
+  positionSecondary?: { x: number; y: number };
+  positionDate?: { x: number; y: number };
+  /** 글자 블록 가로 넓이 (카드 대비 %). 리사이즈 핸들로 조절 */
+  widthMood?: number;
+  widthMain?: number;
+  widthSecondary?: number;
+  widthDate?: number;
+  /** 오늘의 기분 문구 (비어 있으면 mood에 따른 기본 문구 사용) */
+  moodText?: string;
+  /** 오늘의 기분 이모지 (비어 있으면 mood에 따른 기본 이모지 사용) */
+  moodEmoji?: string;
 }
+
+export const DEFAULT_POSITIONS = {
+  mood: { x: 6, y: 6 },
+  main: { x: 10, y: 38 },
+  secondary: { x: 10, y: 55 },
+  date: { x: 72, y: 85 },
+} as const;
+
+export const DEFAULT_WIDTHS = {
+  mood: 50,
+  main: 85,
+  secondary: 85,
+  date: 40,
+} as const;
 
 export interface StoryCardPreviewProps {
   form: StoryFormState;
@@ -68,17 +96,28 @@ export function StoryCardPreview({ form, cardRef }: StoryCardPreviewProps) {
   const aspectRatio = aspectRatioMap[form.cardAspect ?? "9_16"];
   const isLandscape = form.cardAspect === "3_2" || form.cardAspect === "4_3" || form.cardAspect === "16_9";
 
-  const moodLabel =
-    form.mood === "happy"
-      ? "Good day"
-      : form.mood === "tired"
-      ? "A little tired"
-      : form.mood === "focused"
-      ? "In focus"
-      : "Easy day";
+  const posMood = form.positionMood ?? DEFAULT_POSITIONS.mood;
+  const posMain = form.positionMain ?? DEFAULT_POSITIONS.main;
+  const posSecondary = form.positionSecondary ?? DEFAULT_POSITIONS.secondary;
+  const posDate = form.positionDate ?? DEFAULT_POSITIONS.date;
+  const widthMood = form.widthMood ?? DEFAULT_WIDTHS.mood;
+  const widthMain = form.widthMain ?? DEFAULT_WIDTHS.main;
+  const widthSecondary = form.widthSecondary ?? DEFAULT_WIDTHS.secondary;
+  const widthDate = form.widthDate ?? DEFAULT_WIDTHS.date;
 
-  const moodEmoji =
+  const defaultMoodLabel =
+    form.mood === "happy"
+      ? "좋은 하루"
+      : form.mood === "tired"
+      ? "조금 지침"
+      : form.mood === "focused"
+      ? "집중"
+      : "편한 하루";
+  const moodLabel = form.moodText?.trim() || defaultMoodLabel;
+
+  const defaultMoodEmoji =
     form.mood === "happy" ? "😊" : form.mood === "tired" ? "😮‍💨" : form.mood === "focused" ? "🔥" : "😌";
+  const moodEmoji = form.moodEmoji?.trim() || defaultMoodEmoji;
 
   return (
     <div
@@ -115,44 +154,57 @@ export function StoryCardPreview({ form, cardRef }: StoryCardPreviewProps) {
           }}
         />
 
-        <div
-          className="relative flex h-full flex-col justify-between px-6 py-6 text-slate-50 sm:px-7 sm:py-7"
-          style={{ zIndex: 10 }}
-        >
-          <div className="flex items-start justify-between gap-3">
-            <div
-              className="inline-flex items-center gap-2 rounded-full bg-black/35 px-3 py-1 text-[11px] backdrop-blur-sm"
-              style={{ color: moodColor }}
-            >
-              <span>{moodEmoji}</span>
-              <span className="uppercase tracking-[0.16em]">{moodLabel}</span>
-            </div>
+        <div className="relative h-full w-full text-slate-50" style={{ zIndex: 10 }}>
+          <div
+            className="absolute inline-flex max-w-[var(--block-width)] items-center gap-2 rounded-full bg-black/35 px-3 py-1 text-[11px] backdrop-blur-sm"
+            style={{
+              left: `${posMood.x}%`,
+              top: `${posMood.y}%`,
+              color: moodColor,
+              ["--block-width" as string]: `${widthMood}%`,
+            }}
+          >
+            <span>{moodEmoji}</span>
+            <span>{moodLabel}</span>
           </div>
 
-          <div className="mt-6 flex flex-1 flex-col justify-center">
+          <p
+            className="absolute max-w-[var(--block-width)] break-words text-lg font-semibold leading-relaxed sm:text-xl"
+            style={{
+              left: `${posMain.x}%`,
+              top: `${posMain.y}%`,
+              textShadow: "0 1px 6px rgba(15,23,42,0.9)",
+              color: mainColor,
+              ["--block-width" as string]: `${widthMain}%`,
+            }}
+          >
+            {form.textMain || "오늘을 한 문장으로 남겨보세요."}
+          </p>
+          {form.textSecondary && (
             <p
-              className="text-balance text-lg font-semibold leading-relaxed sm:text-xl"
-              style={{ textShadow: "0 1px 6px rgba(15,23,42,0.9)", color: mainColor }}
+              className="absolute max-w-[var(--block-width)] text-[13px] leading-relaxed"
+              style={{
+                left: `${posSecondary.x}%`,
+                top: `${posSecondary.y}%`,
+                textShadow: "0 1px 4px rgba(15,23,42,0.8)",
+                color: secondaryColor,
+                ["--block-width" as string]: `${widthSecondary}%`,
+              }}
             >
-              {form.textMain || "오늘을 한 문장으로 남겨보세요."}
+              {form.textSecondary}
             </p>
-            {form.textSecondary && (
-              <p
-                className="mt-3 text-[13px] leading-relaxed"
-                style={{ textShadow: "0 1px 4px rgba(15,23,42,0.8)", color: secondaryColor }}
-              >
-                {form.textSecondary}
-              </p>
-            )}
-          </div>
+          )}
 
-          <div className="mt-4 flex items-end justify-end text-[11px]">
-            <div
-              className="rounded-full bg-black/35 px-3 py-1 text-[11px] font-medium backdrop-blur-sm"
-              style={{ color: dateColor }}
-            >
-              {form.date || "오늘"}
-            </div>
+          <div
+            className="absolute max-w-[var(--block-width)] rounded-full bg-black/35 px-3 py-1 text-[11px] font-medium backdrop-blur-sm"
+            style={{
+              left: `${posDate.x}%`,
+              top: `${posDate.y}%`,
+              color: dateColor,
+              ["--block-width" as string]: `${widthDate}%`,
+            }}
+          >
+            {form.date || "오늘"}
           </div>
         </div>
       </div>

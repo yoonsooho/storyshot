@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import * as htmlToImage from "html-to-image";
-import type { StoryFormState, GradientId, CardAspectId } from "../components/StoryCardPreview";
+import type { StoryFormState, GradientId, CardAspectId, MoodId } from "../components/StoryCardPreview";
+import { DEFAULT_POSITIONS, DEFAULT_WIDTHS } from "../components/StoryCardPreview";
 import { AdBanner } from "../components/AdBanner";
 import { trackEvent } from "../lib/analytics";
 
@@ -22,6 +23,16 @@ const initialState: StoryFormState = {
     moodColor: "#f9fafb",
     cardAspect: "9_16",
 };
+
+const MOOD_EMOJI_OPTIONS = [
+    "😌", "😊", "😮‍💨", "🔥", "😢", "😤", "🧘", "🤔", "😴", "✨",
+    "💪", "🌸", "🎉", "🙏", "⭐", "😅", "🍀", "💫", "🌙", "☀️",
+    "❤️", "🎯", "😎", "🤗", "🌈",
+];
+
+function defaultMoodEmojiFor(mood: MoodId): string {
+    return mood === "happy" ? "😊" : mood === "tired" ? "😮‍💨" : mood === "focused" ? "🔥" : "😌";
+}
 
 export default function Home() {
     const [form, setForm] = useState<StoryFormState>(initialState);
@@ -48,6 +59,10 @@ export default function Home() {
                 cacheBust: true,
                 pixelRatio: window.devicePixelRatio || 1,
                 backgroundColor: "#ffffff",
+                filter: (node) => {
+                    if (node instanceof Element && node.closest?.("[data-card-export-ignore]")) return false;
+                    return true;
+                },
             });
 
             const link = document.createElement("a");
@@ -114,16 +129,24 @@ export default function Home() {
                     </p>
                     <div className="mt-3 max-w-2xl rounded-2xl bg-slate-900/3 px-3 py-2.5 text-[11px] text-slate-700 ring-1 ring-slate-100 sm:text-xs">
                         <p className="font-medium text-slate-900">사용 방법</p>
-                        <ol className="mt-1.5 list-decimal space-y-0.5 pl-4">
-                            <li>왼쪽에서 오늘의 한 줄, 보조 문장, 날짜, 기분을 입력합니다.</li>
-                            <li>배경을 그라데이션 또는 사진으로 선택하고, 필요하면 배경 어둡기를 조절합니다.</li>
+                        <ol className="mt-1.5 list-decimal space-y-1 pl-4">
                             <li>
-                                <strong>카드의 글자를 클릭</strong>하면 색상 선택기가 나타납니다. (메인 문장, 보조 문장,
-                                날짜, 기분 뱃지 모두 클릭 가능)
+                                <strong>왼쪽 폼</strong>에서 오늘의 한 줄, 보조 문장, 날짜를 입력합니다. 오늘의 기분은
+                                차분함/좋음/피곤함/집중 중 선택하고, 필요하면 「기분 문구」를 직접 적거나 「기분 이모지」를
+                                골라 꾸밀 수 있습니다.
                             </li>
                             <li>
-                                원하는 카드 비율을 선택한 뒤, 아래의 「PNG로 카드 저장」 버튼을 눌러 이미지를
-                                저장합니다.
+                                배경을 그라데이션 또는 사진으로 선택하고, 사진일 경우 <strong>배경 어둡기</strong>로
+                                글자 가독성을 조절합니다. 원하는 <strong>카드 비율</strong>(9:16, 4:5, 1:1 등)을 선택합니다.
+                            </li>
+                            <li>
+                                <strong>미리보기 카드</strong>에서 글자 블록을 <strong>드래그</strong>하면 위치를 바꿀 수
+                                있고, <strong>클릭</strong>하면 텍스트 색상을 바꿀 수 있습니다. 각 블록 오른쪽 끝의
+                                <strong> 넓이 조절 바(▐)</strong>를 좌우로 드래그하면 글자 영역 너비를 조절할 수 있습니다.
+                            </li>
+                            <li>
+                                마음에 들면 <strong>「PNG로 카드 저장」</strong> 버튼을 눌러 이미지를 내려받습니다.
+                                저장된 이미지에는 넓이 조절 바나 색상 선택 UI가 포함되지 않습니다.
                             </li>
                         </ol>
                     </div>
@@ -153,7 +176,7 @@ export default function Home() {
                                 onChange={(v) => handleChange("textSecondary", v)}
                             />
 
-                            <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+                            <div className="flex flex-col gap-4">
                                 <Field label="날짜" value={form.date} onChange={(v) => handleChange("date", v)} />
                                 <fieldset className="flex flex-col gap-2 text-xs sm:text-sm">
                                     <legend className="text-xs font-medium text-slate-700">오늘의 기분</legend>
@@ -178,6 +201,49 @@ export default function Home() {
                                             label="🔥 집중"
                                             onClick={() => handleChange("mood", "focused")}
                                         />
+                                    </div>
+                                    <label className="mt-1 flex flex-col gap-1">
+                                        <span className="text-[11px] text-slate-500">기분 문구 (선택)</span>
+                                        <input
+                                            type="text"
+                                            placeholder={
+                                                form.mood === "happy"
+                                                    ? "좋은 하루"
+                                                    : form.mood === "tired"
+                                                    ? "조금 지침"
+                                                    : form.mood === "focused"
+                                                    ? "집중"
+                                                    : "편한 하루"
+                                            }
+                                            value={form.moodText ?? ""}
+                                            onChange={(e) => handleChange("moodText", e.target.value)}
+                                            className="h-9 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 shadow-inner shadow-slate-100 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-200"
+                                        />
+                                    </label>
+                                    <div className="flex flex-col gap-1">
+                                        <span className="text-[11px] text-slate-500">기분 이모지</span>
+                                        <div className="flex flex-wrap gap-1">
+                                            {MOOD_EMOJI_OPTIONS.map((emoji) => (
+                                                <button
+                                                    key={emoji}
+                                                    type="button"
+                                                    onClick={() =>
+                                                        handleChange(
+                                                            "moodEmoji",
+                                                            form.moodEmoji === emoji ? "" : emoji
+                                                        )
+                                                    }
+                                                    className={`flex h-8 w-8 items-center justify-center rounded-lg border text-lg transition ${
+                                                        (form.moodEmoji || defaultMoodEmojiFor(form.mood)) === emoji
+                                                            ? "border-slate-900 bg-slate-100 ring-1 ring-slate-900"
+                                                            : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
+                                                    }`}
+                                                    title={emoji}
+                                                >
+                                                    {emoji}
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
                                 </fieldset>
                             </div>
@@ -335,7 +401,7 @@ export default function Home() {
                                 스토리 카드 미리보기
                             </h2>
                             <p className="text-[11px] text-slate-500 sm:text-xs">
-                                💡 글자를 클릭하면 색상을 바꿀 수 있어요
+                                💡 글자 드래그: 위치 변경 · 클릭: 색상 변경 · 오른쪽 ▐ 드래그: 넓이 조절 (저장 시 ▐·색상 UI는 제외됨)
                             </p>
                         </div>
 
@@ -359,6 +425,18 @@ export default function Home() {
                                     } else {
                                         handleChange("moodColor", color);
                                     }
+                                }}
+                                onPositionChange={(target, pos) => {
+                                    if (target === "main") handleChange("positionMain", pos);
+                                    else if (target === "secondary") handleChange("positionSecondary", pos);
+                                    else if (target === "date") handleChange("positionDate", pos);
+                                    else handleChange("positionMood", pos);
+                                }}
+                                onWidthChange={(target, width) => {
+                                    if (target === "main") handleChange("widthMain", width);
+                                    else if (target === "secondary") handleChange("widthSecondary", width);
+                                    else if (target === "date") handleChange("widthDate", width);
+                                    else handleChange("widthMood", width);
                                 }}
                             />
                         </div>
@@ -462,11 +540,15 @@ function TemplateChip({ label, description, active, onClick }: TemplateChipProps
     );
 }
 
+type PositionTarget = "main" | "secondary" | "date" | "mood";
+
 interface CardPreviewProps {
     form: StoryFormState;
     activeTextTarget?: "main" | "secondary" | "date" | "mood" | null;
     onTextTargetSelect?: (target: "main" | "secondary" | "date" | "mood" | null) => void;
     onTextColorChange?: (target: "main" | "secondary" | "date" | "mood", color: string) => void;
+    onPositionChange?: (target: PositionTarget, pos: { x: number; y: number }) => void;
+    onWidthChange?: (target: PositionTarget, width: number) => void;
 }
 
 function CardPreview({
@@ -475,6 +557,8 @@ function CardPreview({
     activeTextTarget,
     onTextTargetSelect,
     onTextColorChange,
+    onPositionChange,
+    onWidthChange,
 }: CardPreviewProps & { cardRef: React.RefObject<HTMLDivElement | null> }) {
     const gradientBackground =
         form.gradient === "sunset"
@@ -490,17 +574,19 @@ function CardPreview({
     const dateColor = form.dateColor || "#f9fafb";
     const moodColor = form.moodColor || "#f9fafb";
 
-    const moodLabel =
+    const defaultMoodLabel =
         form.mood === "happy"
-            ? "Good day"
+            ? "좋은 하루"
             : form.mood === "tired"
-            ? "A little tired"
+            ? "조금 지침"
             : form.mood === "focused"
-            ? "In focus"
-            : "Easy day";
+            ? "집중"
+            : "편한 하루";
+    const moodLabel = form.moodText?.trim() || defaultMoodLabel;
 
-    const moodEmoji =
+    const defaultMoodEmoji =
         form.mood === "happy" ? "😊" : form.mood === "tired" ? "😮‍💨" : form.mood === "focused" ? "🔥" : "😌";
+    const moodEmoji = form.moodEmoji?.trim() || defaultMoodEmoji;
 
     const aspectRatioMap: Record<CardAspectId, string> = {
         "9_16": "9 / 16",
@@ -513,6 +599,114 @@ function CardPreview({
     };
     const aspectRatio = aspectRatioMap[form.cardAspect ?? "9_16"];
     const isLandscape = form.cardAspect === "3_2" || form.cardAspect === "4_3" || form.cardAspect === "16_9";
+
+    const posMood = form.positionMood ?? DEFAULT_POSITIONS.mood;
+    const posMain = form.positionMain ?? DEFAULT_POSITIONS.main;
+    const posSecondary = form.positionSecondary ?? DEFAULT_POSITIONS.secondary;
+    const posDate = form.positionDate ?? DEFAULT_POSITIONS.date;
+    const widthMood = form.widthMood ?? DEFAULT_WIDTHS.mood;
+    const widthMain = form.widthMain ?? DEFAULT_WIDTHS.main;
+    const widthSecondary = form.widthSecondary ?? DEFAULT_WIDTHS.secondary;
+    const widthDate = form.widthDate ?? DEFAULT_WIDTHS.date;
+
+    const dragRef = useRef<{
+        target: PositionTarget;
+        startClientX: number;
+        startClientY: number;
+        startX: number;
+        startY: number;
+        hasMoved: boolean;
+    } | null>(null);
+
+    const clamp = (v: number) => Math.max(0, Math.min(95, v));
+
+    const handlePointerMove = useRef((e: PointerEvent) => {
+        const d = dragRef.current;
+        if (!d || !cardRef.current || !onPositionChange) return;
+        const rect = cardRef.current.getBoundingClientRect();
+        const dx = e.clientX - d.startClientX;
+        const dy = e.clientY - d.startClientY;
+        const dist = Math.hypot(dx, dy);
+        if (!d.hasMoved && dist > 6) d.hasMoved = true;
+        if (d.hasMoved) {
+            const newX = clamp(d.startX + (dx / rect.width) * 100);
+            const newY = clamp(d.startY + (dy / rect.height) * 100);
+            onPositionChange(d.target, { x: newX, y: newY });
+        }
+    }).current;
+
+    const onPointerDown = (target: PositionTarget, e: React.PointerEvent) => {
+        const pos =
+            target === "mood"
+                ? posMood
+                : target === "main"
+                  ? posMain
+                  : target === "secondary"
+                    ? posSecondary
+                    : posDate;
+        dragRef.current = {
+            target,
+            startClientX: e.clientX,
+            startClientY: e.clientY,
+            startX: pos.x,
+            startY: pos.y,
+            hasMoved: false,
+        };
+        (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+        window.addEventListener("pointermove", handlePointerMove);
+        const onUp = () => {
+            window.removeEventListener("pointermove", handlePointerMove);
+            window.removeEventListener("pointerup", onUp);
+            window.removeEventListener("pointercancel", onUp);
+            const d = dragRef.current;
+            dragRef.current = null;
+            if (d && !d.hasMoved) onTextTargetSelect?.(activeTextTarget === d.target ? null : d.target);
+        };
+        window.addEventListener("pointerup", onUp);
+        window.addEventListener("pointercancel", onUp);
+    };
+
+    const onPointerUp = (target: PositionTarget, e: React.PointerEvent) => {
+        (e.target as HTMLElement).releasePointerCapture?.(e.pointerId);
+        const d = dragRef.current;
+        dragRef.current = null;
+        if (d && !d.hasMoved) onTextTargetSelect?.(activeTextTarget === target ? null : target);
+    };
+
+    const resizeRef = useRef<{
+        target: PositionTarget;
+        startClientX: number;
+        startWidth: number;
+    } | null>(null);
+    const clampWidth = (v: number) => Math.max(20, Math.min(95, v));
+
+    const onResizePointerDown = (target: PositionTarget, e: React.PointerEvent) => {
+        e.stopPropagation();
+        const w =
+            target === "mood"
+                ? widthMood
+                : target === "main"
+                  ? widthMain
+                  : target === "secondary"
+                    ? widthSecondary
+                    : widthDate;
+        resizeRef.current = { target, startClientX: e.clientX, startWidth: w };
+        (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+    };
+
+    const onResizePointerMove = (e: React.PointerEvent) => {
+        const r = resizeRef.current;
+        if (!r || !cardRef.current || !onWidthChange) return;
+        const rect = cardRef.current.getBoundingClientRect();
+        const dx = e.clientX - r.startClientX;
+        const newWidth = clampWidth(r.startWidth + (dx / rect.width) * 100);
+        onWidthChange(r.target, newWidth);
+    };
+
+    const onResizePointerUp = (e: React.PointerEvent) => {
+        (e.target as HTMLElement).releasePointerCapture?.(e.pointerId);
+        resizeRef.current = null;
+    };
 
     return (
         <div
@@ -550,109 +744,166 @@ function CardPreview({
                 />
 
                 <div
-                    className="relative flex h-full flex-col justify-between px-6 py-6 text-slate-50 sm:px-7 sm:py-7"
+                    className="relative h-full w-full select-none text-slate-50"
                     style={{ zIndex: 10 }}
+                    onPointerMove={onResizePointerMove}
+                    onPointerUp={onResizePointerUp}
                 >
-                    <div className="flex items-start justify-between gap-3">
-                        <div className="relative">
+                    <div
+                        className="absolute flex items-stretch"
+                        style={{ left: `${posMood.x}%`, top: `${posMood.y}%`, maxWidth: `${widthMood}%` }}
+                    >
+                        <div
+                            className="inline-flex cursor-grab active:cursor-grabbing items-center gap-2 rounded-full bg-black/35 px-3 py-1 text-[11px] backdrop-blur-sm transition-colors hover:bg-black/50"
+                            style={{ color: moodColor }}
+                            title="드래그: 위치 변경 · 클릭: 색상 변경"
+                            onPointerDown={(ev) => onPointerDown("mood", ev)}
+                            onPointerUp={(ev) => onPointerUp("mood", ev)}
+                        >
+                            <span>{moodEmoji}</span>
+                            <span>{moodLabel}</span>
+                        </div>
+                        {onWidthChange && (
                             <div
-                                className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-black/35 px-3 py-1 text-[11px] backdrop-blur-sm transition-colors hover:bg-black/50"
-                                style={{ color: moodColor }}
-                                title="클릭하면 색상 변경"
-                                onClick={() => onTextTargetSelect?.(activeTextTarget === "mood" ? null : "mood")}
+                                data-card-export-ignore
+                                className="flex w-3 shrink-0 cursor-ew-resize items-center justify-end rounded-r-full pr-0.5 opacity-60 hover:opacity-100"
+                                title="드래그: 넓이 조절"
+                                onPointerDown={(ev) => onResizePointerDown("mood", ev)}
                             >
-                                <span>{moodEmoji}</span>
-                                <span className="uppercase tracking-[0.16em]">{moodLabel}</span>
+                                <span className="text-[10px]">▐</span>
                             </div>
-                            {activeTextTarget === "mood" && (
-                                <div className="absolute left-0 top-full z-20 mt-2 flex items-center gap-2 rounded-xl bg-white/95 px-3 py-1.5 text-[11px] text-slate-700 shadow-lg ring-1 ring-slate-200">
-                                    <span>텍스트 색상</span>
-                                    <input
-                                        type="color"
-                                        value={form.moodColor || "#f9fafb"}
-                                        onChange={(e) => onTextColorChange?.("mood", e.target.value)}
-                                        className="h-5 w-5 cursor-pointer rounded-full border border-slate-200 bg-white p-0"
-                                    />
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="mt-6 flex flex-1 flex-col justify-center space-y-3">
-                        <div className="relative">
-                            <p
-                                className="text-balance text-lg font-semibold leading-relaxed sm:text-xl cursor-pointer rounded-md px-1 -mx-1 transition-colors hover:bg-white/10"
-                                style={{ textShadow: "0 1px 6px rgba(15,23,42,0.9)", color: mainColor }}
-                                title="클릭하면 색상 변경"
-                                onClick={() => onTextTargetSelect?.(activeTextTarget === "main" ? null : "main")}
-                            >
-                                {form.textMain || "오늘을 한 문장으로 남겨보세요."}
-                            </p>
-                            {activeTextTarget === "main" && (
-                                <div className="absolute left-0 top-full z-20 mt-2 flex items-center gap-2 rounded-xl bg-white/95 px-3 py-1.5 text-[11px] text-slate-700 shadow-lg ring-1 ring-slate-200">
-                                    <span>텍스트 색상</span>
-                                    <input
-                                        type="color"
-                                        value={form.textMainColor || "#f9fafb"}
-                                        onChange={(e) => onTextColorChange?.("main", e.target.value)}
-                                        className="h-5 w-5 cursor-pointer rounded-full border border-slate-200 bg-white p-0"
-                                    />
-                                </div>
-                            )}
-                        </div>
-
-                        {form.textSecondary && (
-                            <div className="relative">
-                                <p
-                                    className="text-[13px] leading-relaxed cursor-pointer rounded-md px-1 -mx-1 transition-colors hover:bg-white/10"
-                                    style={{
-                                        textShadow: "0 1px 4px rgba(15,23,42,0.8)",
-                                        color: secondaryColor,
-                                    }}
-                                    title="클릭하면 색상 변경"
-                                    onClick={() =>
-                                        onTextTargetSelect?.(activeTextTarget === "secondary" ? null : "secondary")
-                                    }
-                                >
-                                    {form.textSecondary}
-                                </p>
-                                {activeTextTarget === "secondary" && (
-                                    <div className="absolute left-0 top-full z-20 mt-2 flex items-center gap-2 rounded-xl bg-white/95 px-3 py-1.5 text-[11px] text-slate-700 shadow-lg ring-1 ring-slate-200">
-                                        <span>텍스트 색상</span>
-                                        <input
-                                            type="color"
-                                            value={form.textSecondaryColor || "#e5e7eb"}
-                                            onChange={(e) => onTextColorChange?.("secondary", e.target.value)}
-                                            className="h-5 w-5 cursor-pointer rounded-full border border-slate-200 bg-white p-0"
-                                        />
-                                    </div>
-                                )}
+                        )}
+                        {activeTextTarget === "mood" && (
+                            <div data-card-export-ignore className="absolute left-0 top-full z-20 mt-2 flex items-center gap-2 rounded-xl bg-white/95 px-3 py-1.5 text-[11px] text-slate-700 shadow-lg ring-1 ring-slate-200">
+                                <span>텍스트 색상</span>
+                                <input
+                                    type="color"
+                                    value={form.moodColor || "#f9fafb"}
+                                    onChange={(e) => onTextColorChange?.("mood", e.target.value)}
+                                    className="h-5 w-5 cursor-pointer rounded-full border border-slate-200 bg-white p-0"
+                                />
                             </div>
                         )}
                     </div>
 
-                    <div className="mt-4 flex items-end justify-end text-[11px]">
-                        <div className="relative">
+                    <div
+                        className="absolute flex max-w-[95%]"
+                        style={{ left: `${posMain.x}%`, top: `${posMain.y}%`, width: `${widthMain}%` }}
+                    >
+                        <p
+                            className="min-w-0 cursor-grab active:cursor-grabbing flex-1 break-words text-lg font-semibold leading-relaxed rounded-md transition-colors hover:bg-white/10 sm:text-xl"
+                            style={{
+                                textShadow: "0 1px 6px rgba(15,23,42,0.9)",
+                                color: mainColor,
+                            }}
+                            title="드래그: 위치 변경 · 클릭: 색상 변경"
+                            onPointerDown={(ev) => onPointerDown("main", ev)}
+                            onPointerUp={(ev) => onPointerUp("main", ev)}
+                        >
+                            {form.textMain || "오늘을 한 문장으로 남겨보세요."}
+                        </p>
+                        {onWidthChange && (
                             <div
-                                className="rounded-full bg-black/35 px-3 py-1 text-[11px] font-medium backdrop-blur-sm cursor-pointer transition-colors hover:bg-black/50"
-                                style={{ color: dateColor }}
-                                title="클릭하면 색상 변경"
-                                onClick={() => onTextTargetSelect?.(activeTextTarget === "date" ? null : "date")}
+                                data-card-export-ignore
+                                className="flex w-3 shrink-0 cursor-ew-resize items-center justify-end pr-0.5 opacity-60 hover:opacity-100"
+                                title="드래그: 넓이 조절"
+                                onPointerDown={(ev) => onResizePointerDown("main", ev)}
                             >
-                                {form.date || "오늘"}
+                                <span className="text-[10px]">▐</span>
                             </div>
-                            {activeTextTarget === "date" && (
-                                <div className="absolute bottom-full right-0 z-20 mb-2 flex items-center gap-2 rounded-xl bg-white/95 px-3 py-1.5 text-[11px] text-slate-700 shadow-lg ring-1 ring-slate-200">
+                        )}
+                        {activeTextTarget === "main" && (
+                            <div data-card-export-ignore className="absolute left-0 top-full z-20 mt-2 flex items-center gap-2 rounded-xl bg-white/95 px-3 py-1.5 text-[11px] text-slate-700 shadow-lg ring-1 ring-slate-200">
+                                <span>텍스트 색상</span>
+                                <input
+                                    type="color"
+                                    value={form.textMainColor || "#f9fafb"}
+                                    onChange={(e) => onTextColorChange?.("main", e.target.value)}
+                                    className="h-5 w-5 cursor-pointer rounded-full border border-slate-200 bg-white p-0"
+                                />
+                            </div>
+                        )}
+                    </div>
+
+                    {form.textSecondary && (
+                        <div
+                            className="absolute flex max-w-[95%]"
+                            style={{
+                                left: `${posSecondary.x}%`,
+                                top: `${posSecondary.y}%`,
+                                width: `${widthSecondary}%`,
+                            }}
+                        >
+                            <p
+                                className="min-w-0 cursor-grab active:cursor-grabbing flex-1 text-[13px] leading-relaxed rounded-md transition-colors hover:bg-white/10"
+                                style={{
+                                    textShadow: "0 1px 4px rgba(15,23,42,0.8)",
+                                    color: secondaryColor,
+                                }}
+                                title="드래그: 위치 변경 · 클릭: 색상 변경"
+                                onPointerDown={(ev) => onPointerDown("secondary", ev)}
+                                onPointerUp={(ev) => onPointerUp("secondary", ev)}
+                            >
+                                {form.textSecondary}
+                            </p>
+                            {onWidthChange && (
+                                <div
+                                    data-card-export-ignore
+                                    className="flex w-3 shrink-0 cursor-ew-resize items-center justify-end pr-0.5 opacity-60 hover:opacity-100"
+                                    title="드래그: 넓이 조절"
+                                    onPointerDown={(ev) => onResizePointerDown("secondary", ev)}
+                                >
+                                    <span className="text-[10px]">▐</span>
+                                </div>
+                            )}
+                            {activeTextTarget === "secondary" && (
+                                <div data-card-export-ignore className="absolute left-0 top-full z-20 mt-2 flex items-center gap-2 rounded-xl bg-white/95 px-3 py-1.5 text-[11px] text-slate-700 shadow-lg ring-1 ring-slate-200">
                                     <span>텍스트 색상</span>
                                     <input
                                         type="color"
-                                        value={form.dateColor || "#f9fafb"}
-                                        onChange={(e) => onTextColorChange?.("date", e.target.value)}
+                                        value={form.textSecondaryColor || "#e5e7eb"}
+                                        onChange={(e) => onTextColorChange?.("secondary", e.target.value)}
                                         className="h-5 w-5 cursor-pointer rounded-full border border-slate-200 bg-white p-0"
                                     />
                                 </div>
                             )}
                         </div>
+                    )}
+
+                    <div
+                        className="absolute flex items-stretch"
+                        style={{ left: `${posDate.x}%`, top: `${posDate.y}%`, maxWidth: `${widthDate}%` }}
+                    >
+                        <div
+                            className="cursor-grab active:cursor-grabbing rounded-full bg-black/35 px-3 py-1 text-[11px] font-medium backdrop-blur-sm transition-colors hover:bg-black/50"
+                            style={{ color: dateColor }}
+                            title="드래그: 위치 변경 · 클릭: 색상 변경"
+                            onPointerDown={(ev) => onPointerDown("date", ev)}
+                            onPointerUp={(ev) => onPointerUp("date", ev)}
+                        >
+                            {form.date || "오늘"}
+                        </div>
+                        {onWidthChange && (
+                            <div
+                                data-card-export-ignore
+                                className="flex w-3 shrink-0 cursor-ew-resize items-center justify-end rounded-r-full pr-0.5 opacity-60 hover:opacity-100"
+                                title="드래그: 넓이 조절"
+                                onPointerDown={(ev) => onResizePointerDown("date", ev)}
+                            >
+                                <span className="text-[10px]">▐</span>
+                            </div>
+                        )}
+                        {activeTextTarget === "date" && (
+                            <div data-card-export-ignore className="absolute bottom-full right-0 z-20 mb-2 flex items-center gap-2 rounded-xl bg-white/95 px-3 py-1.5 text-[11px] text-slate-700 shadow-lg ring-1 ring-slate-200">
+                                <span>텍스트 색상</span>
+                                <input
+                                    type="color"
+                                    value={form.dateColor || "#f9fafb"}
+                                    onChange={(e) => onTextColorChange?.("date", e.target.value)}
+                                    className="h-5 w-5 cursor-pointer rounded-full border border-slate-200 bg-white p-0"
+                                />
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
