@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import * as htmlToImage from "html-to-image";
 import type { StoryFormState, GradientId } from "../components/StoryCardPreview";
 import { AdBanner } from "../components/AdBanner";
+import { trackEvent } from "../lib/analytics";
 
 const initialState: StoryFormState = {
     textMain: "오늘은 여기까지. 그래도 잘했다.",
@@ -46,6 +47,14 @@ export default function Home() {
             link.href = dataUrl;
             link.download = "story-card.png";
             link.click();
+
+            trackEvent("download_card", {
+                background_type: form.backgroundType,
+                gradient: form.gradient,
+                has_image: !!form.imageDataUrl,
+                has_secondary_text: !!form.textSecondary,
+                mood: form.mood,
+            });
         } catch (error) {
             console.error(error);
             alert("이미지로 저장하는 중 문제가 발생했습니다.");
@@ -75,6 +84,11 @@ export default function Home() {
                             imageFileName: file.name,
                         } as StoryFormState)
                 );
+
+                trackEvent("upload_background_image", {
+                    file_name: file.name,
+                    file_type: file.type,
+                });
             }
         };
         reader.readAsDataURL(file);

@@ -1,0 +1,15 @@
+"use client";
+
+declare global {
+    interface Window {
+        gtag?: (...args: unknown[]) => void;
+    }
+}
+
+export function trackEvent(action: string, params?: Record<string, unknown>) {
+    if (typeof window === "undefined") return;
+    if (!window.gtag) return;
+
+    window.gtag("event", action, params ?? {});
+}
+
