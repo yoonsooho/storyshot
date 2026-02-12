@@ -2,7 +2,7 @@
 
 StoryShot은 **사진 + 텍스트로 인스타 스토리/카카오톡 프로필/블로그 썸네일에 쓰기 좋은 9:16 카드**를 만드는 개인 사이드 프로젝트입니다.
 
--   **Live**: https://storyshot.vercel.app/
+-   **Live**: https://storyshot.pages.dev/
 -   **Stack**: Next.js (App Router), React, TypeScript, Tailwind CSS v4
 
 예시 썸네일(OG 이미지):
@@ -48,7 +48,7 @@ StoryShot은 **사진 + 텍스트로 인스타 스토리/카카오톡 프로필/
 
 ```ts
 export default function robots(): MetadataRoute.Robots {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://storyshot.vercel.app";
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://storyshot.pages.dev";
 
     return {
         rules: {
@@ -61,13 +61,13 @@ export default function robots(): MetadataRoute.Robots {
 ```
 
 -   모든 크롤러에 대해 전체 경로 크롤링 허용
--   `Sitemap: https://storyshot.vercel.app/sitemap.xml` 을 명시
+-   `Sitemap: https://storyshot.pages.dev/sitemap.xml` 을 명시
 
 #### 3. sitemap 설정 (`src/app/sitemap.ts`)
 
 ```ts
 export default function sitemap(): MetadataRoute.Sitemap {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://storyshot.vercel.app";
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://storyshot.pages.dev";
 
     return [
         {
@@ -92,7 +92,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 google-site-verification: googleaffbcddc16034708.html
 ```
 
--   배포 후 `https://storyshot.vercel.app/googleaffbcddc16034708.html` 에 접근 가능  
+-   배포 후 `https://storyshot.pages.dev/googleaffbcddc16034708.html` 에 접근 가능  
     → GSC에서 HTML 파일 방식으로 소유권 확인
 
 ---
