@@ -25,9 +25,31 @@ const initialState: StoryFormState = {
 };
 
 const MOOD_EMOJI_OPTIONS = [
-    "😌", "😊", "😮‍💨", "🔥", "😢", "😤", "🧘", "🤔", "😴", "✨",
-    "💪", "🌸", "🎉", "🙏", "⭐", "😅", "🍀", "💫", "🌙", "☀️",
-    "❤️", "🎯", "😎", "🤗", "🌈",
+    "😌",
+    "😊",
+    "😮‍💨",
+    "🔥",
+    "😢",
+    "😤",
+    "🧘",
+    "🤔",
+    "😴",
+    "✨",
+    "💪",
+    "🌸",
+    "🎉",
+    "🙏",
+    "⭐",
+    "😅",
+    "🍀",
+    "💫",
+    "🌙",
+    "☀️",
+    "❤️",
+    "🎯",
+    "😎",
+    "🤗",
+    "🌈",
 ];
 
 function defaultMoodEmojiFor(mood: MoodId): string {
@@ -132,17 +154,19 @@ export default function Home() {
                         <ol className="mt-1.5 list-decimal space-y-1 pl-4">
                             <li>
                                 <strong>왼쪽 폼</strong>에서 오늘의 한 줄, 보조 문장, 날짜를 입력합니다. 오늘의 기분은
-                                차분함/좋음/피곤함/집중 중 선택하고, 필요하면 「기분 문구」를 직접 적거나 「기분 이모지」를
-                                골라 꾸밀 수 있습니다.
+                                차분함/좋음/피곤함/집중 중 선택하고, 필요하면 「기분 문구」를 직접 적거나 「기분
+                                이모지」를 골라 꾸밀 수 있습니다.
                             </li>
                             <li>
                                 배경을 그라데이션 또는 사진으로 선택하고, 사진일 경우 <strong>배경 어둡기</strong>로
-                                글자 가독성을 조절합니다. 원하는 <strong>카드 비율</strong>(9:16, 4:5, 1:1 등)을 선택합니다.
+                                글자 가독성을 조절합니다. 원하는 <strong>카드 비율</strong>(9:16, 4:5, 1:1 등)을
+                                선택합니다.
                             </li>
                             <li>
-                                <strong>미리보기 카드</strong>에서 글자 블록을 <strong>드래그</strong>하면 위치를 바꿀 수
-                                있고, <strong>클릭</strong>하면 텍스트 색상을 바꿀 수 있습니다. 각 블록 오른쪽 끝의
-                                <strong> 넓이 조절 바(▐)</strong>를 좌우로 드래그하면 글자 영역 너비를 조절할 수 있습니다.
+                                <strong>미리보기 카드</strong>에서 글자 블록을 <strong>드래그</strong>하면 위치를 바꿀
+                                수 있고, <strong>클릭</strong>하면 텍스트 색상을 바꿀 수 있습니다. 각 블록 오른쪽 끝의
+                                <strong> 넓이 조절 바(▐)</strong>를 좌우로 드래그하면 글자 영역 너비를 조절할 수
+                                있습니다.
                             </li>
                             <li>
                                 마음에 들면 <strong>「PNG로 카드 저장」</strong> 버튼을 눌러 이미지를 내려받습니다.
@@ -228,10 +252,7 @@ export default function Home() {
                                                     key={emoji}
                                                     type="button"
                                                     onClick={() =>
-                                                        handleChange(
-                                                            "moodEmoji",
-                                                            form.moodEmoji === emoji ? "" : emoji
-                                                        )
+                                                        handleChange("moodEmoji", form.moodEmoji === emoji ? "" : emoji)
                                                     }
                                                     className={`flex h-8 w-8 items-center justify-center rounded-lg border text-lg transition ${
                                                         (form.moodEmoji || defaultMoodEmojiFor(form.mood)) === emoji
@@ -397,11 +418,12 @@ export default function Home() {
                     {/* 미리보기 영역 */}
                     <section className="flex flex-col gap-3">
                         <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                            <h2 className="text-sm font-semibold tracking-tight text-slate-900 sm:text-base">
+                            <h2 className="text-sm font-semibold tracking-tight text-slate-900 sm:text-base whitespace-nowrap">
                                 스토리 카드 미리보기
                             </h2>
-                            <p className="text-[11px] text-slate-500 sm:text-xs">
-                                💡 글자 드래그: 위치 변경 · 클릭: 색상 변경 · 오른쪽 ▐ 드래그: 넓이 조절 (저장 시 ▐·색상 UI는 제외됨)
+                            <p className="text-[11px] text-slate-500 sm:text-xs whitespace-nowrap">
+                                💡 글자 드래그: 위치 변경 · 클릭: 색상 변경 · 오른쪽 ▐ 드래그: 넓이 조절 (저장 시 ▐·색상
+                                UI는 제외됨)
                             </p>
                         </div>
 
@@ -637,13 +659,7 @@ function CardPreview({
 
     const onPointerDown = (target: PositionTarget, e: React.PointerEvent) => {
         const pos =
-            target === "mood"
-                ? posMood
-                : target === "main"
-                  ? posMain
-                  : target === "secondary"
-                    ? posSecondary
-                    : posDate;
+            target === "mood" ? posMood : target === "main" ? posMain : target === "secondary" ? posSecondary : posDate;
         dragRef.current = {
             target,
             startClientX: e.clientX,
@@ -686,10 +702,10 @@ function CardPreview({
             target === "mood"
                 ? widthMood
                 : target === "main"
-                  ? widthMain
-                  : target === "secondary"
-                    ? widthSecondary
-                    : widthDate;
+                ? widthMain
+                : target === "secondary"
+                ? widthSecondary
+                : widthDate;
         resizeRef.current = { target, startClientX: e.clientX, startWidth: w };
         (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
     };
@@ -774,7 +790,10 @@ function CardPreview({
                             </div>
                         )}
                         {activeTextTarget === "mood" && (
-                            <div data-card-export-ignore className="absolute left-0 top-full z-20 mt-2 flex items-center gap-2 rounded-xl bg-white/95 px-3 py-1.5 text-[11px] text-slate-700 shadow-lg ring-1 ring-slate-200">
+                            <div
+                                data-card-export-ignore
+                                className="absolute left-0 top-full z-20 mt-2 flex items-center gap-2 rounded-xl bg-white/95 px-3 py-1.5 text-[11px] text-slate-700 shadow-lg ring-1 ring-slate-200"
+                            >
                                 <span>텍스트 색상</span>
                                 <input
                                     type="color"
@@ -813,7 +832,10 @@ function CardPreview({
                             </div>
                         )}
                         {activeTextTarget === "main" && (
-                            <div data-card-export-ignore className="absolute left-0 top-full z-20 mt-2 flex items-center gap-2 rounded-xl bg-white/95 px-3 py-1.5 text-[11px] text-slate-700 shadow-lg ring-1 ring-slate-200">
+                            <div
+                                data-card-export-ignore
+                                className="absolute left-0 top-full z-20 mt-2 flex items-center gap-2 rounded-xl bg-white/95 px-3 py-1.5 text-[11px] text-slate-700 shadow-lg ring-1 ring-slate-200"
+                            >
                                 <span>텍스트 색상</span>
                                 <input
                                     type="color"
@@ -857,7 +879,10 @@ function CardPreview({
                                 </div>
                             )}
                             {activeTextTarget === "secondary" && (
-                                <div data-card-export-ignore className="absolute left-0 top-full z-20 mt-2 flex items-center gap-2 rounded-xl bg-white/95 px-3 py-1.5 text-[11px] text-slate-700 shadow-lg ring-1 ring-slate-200">
+                                <div
+                                    data-card-export-ignore
+                                    className="absolute left-0 top-full z-20 mt-2 flex items-center gap-2 rounded-xl bg-white/95 px-3 py-1.5 text-[11px] text-slate-700 shadow-lg ring-1 ring-slate-200"
+                                >
                                     <span>텍스트 색상</span>
                                     <input
                                         type="color"
@@ -894,7 +919,10 @@ function CardPreview({
                             </div>
                         )}
                         {activeTextTarget === "date" && (
-                            <div data-card-export-ignore className="absolute bottom-full right-0 z-20 mb-2 flex items-center gap-2 rounded-xl bg-white/95 px-3 py-1.5 text-[11px] text-slate-700 shadow-lg ring-1 ring-slate-200">
+                            <div
+                                data-card-export-ignore
+                                className="absolute bottom-full right-0 z-20 mb-2 flex items-center gap-2 rounded-xl bg-white/95 px-3 py-1.5 text-[11px] text-slate-700 shadow-lg ring-1 ring-slate-200"
+                            >
                                 <span>텍스트 색상</span>
                                 <input
                                     type="color"
