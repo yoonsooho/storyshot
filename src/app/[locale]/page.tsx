@@ -2,10 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import * as htmlToImage from "html-to-image";
-import type { StoryFormState, GradientId, CardAspectId, MoodId } from "../components/StoryCardPreview";
-import { DEFAULT_POSITIONS, DEFAULT_WIDTHS } from "../components/StoryCardPreview";
-import { AdBanner } from "../components/AdBanner";
-import { trackEvent } from "../lib/analytics";
+import { useTranslations } from "next-intl";
+import type { StoryFormState, GradientId, CardAspectId, MoodId } from "@/components/StoryCardPreview";
+import { DEFAULT_POSITIONS, DEFAULT_WIDTHS } from "@/components/StoryCardPreview";
+import { AdBanner } from "@/components/AdBanner";
+import { LocaleSwitcher } from "@/components/LocaleSwitcher";
+import { trackEvent } from "@/lib/analytics";
+import Image from "next/image";
 
 const initialState: StoryFormState = {
     textMain: "오늘은 여기까지. 그래도 잘했다.",
@@ -57,6 +60,7 @@ function defaultMoodEmojiFor(mood: MoodId): string {
 }
 
 export default function Home() {
+    const t = useTranslations("home");
     const [form, setForm] = useState<StoryFormState>(initialState);
     const [mounted, setMounted] = useState(false);
     const [activeTextTarget, setActiveTextTarget] = useState<"main" | "secondary" | "date" | "mood" | null>(null);
@@ -72,7 +76,7 @@ export default function Home() {
 
         const target = cardRef.current;
         if (!target) {
-            alert("카드 영역을 찾지 못했습니다.");
+            alert(t("alertCardNotFound"));
             return;
         }
 
@@ -101,7 +105,7 @@ export default function Home() {
             });
         } catch (error) {
             console.error(error);
-            alert("이미지로 저장하는 중 문제가 발생했습니다.");
+            alert(t("alertSaveError"));
         }
     };
 
@@ -142,36 +146,18 @@ export default function Home() {
         <div className="min-h-screen bg-slate-50 px-4 py-10 text-slate-900 page-shell">
             <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
                 <header className="flex flex-col gap-2">
-                    <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-                        StoryShot – 오늘의 한 줄 인스타 스토리 카드 만들기
-                    </h1>
-                    <p className="max-w-2xl text-sm text-slate-600 sm:text-base">
-                        사진 또는 배경을 고르고, 오늘을 담고 싶은 한 줄을 적어보세요. 인스타 스토리, 카카오톡 프로필,
-                        블로그 글 썸네일에 바로 쓸 수 있는 스토리 카드를 만들어 드립니다.
-                    </p>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{t("title")}</h1>
+                        <LocaleSwitcher />
+                    </div>
+                    <p className="max-w-2xl text-sm text-slate-600 sm:text-base">{t("subtitle")}</p>
                     <div className="mt-3 max-w-2xl rounded-2xl bg-slate-900/3 px-3 py-2.5 text-[11px] text-slate-700 ring-1 ring-slate-100 sm:text-xs">
-                        <p className="font-medium text-slate-900">사용 방법</p>
+                        <p className="font-medium text-slate-900">{t("howToUse")}</p>
                         <ol className="mt-1.5 list-decimal space-y-1 pl-4">
-                            <li>
-                                <strong>왼쪽 폼</strong>에서 오늘의 한 줄, 보조 문장, 날짜를 입력합니다. 오늘의 기분은
-                                차분함/좋음/피곤함/집중 중 선택하고, 필요하면 「기분 문구」를 직접 적거나 「기분
-                                이모지」를 골라 꾸밀 수 있습니다.
-                            </li>
-                            <li>
-                                배경을 그라데이션 또는 사진으로 선택하고, 사진일 경우 <strong>배경 어둡기</strong>로
-                                글자 가독성을 조절합니다. 원하는 <strong>카드 비율</strong>(9:16, 4:5, 1:1 등)을
-                                선택합니다.
-                            </li>
-                            <li>
-                                <strong>미리보기 카드</strong>에서 글자 블록을 <strong>드래그</strong>하면 위치를 바꿀
-                                수 있고, <strong>클릭</strong>하면 텍스트 색상을 바꿀 수 있습니다. 각 블록 오른쪽 끝의
-                                <strong> 넓이 조절 바(▐)</strong>를 좌우로 드래그하면 글자 영역 너비를 조절할 수
-                                있습니다.
-                            </li>
-                            <li>
-                                마음에 들면 <strong>「PNG로 카드 저장」</strong> 버튼을 눌러 이미지를 내려받습니다.
-                                저장된 이미지에는 넓이 조절 바나 색상 선택 UI가 포함되지 않습니다.
-                            </li>
+                            <li>{t("howToUseStep1")}</li>
+                            <li>{t("howToUseStep2")}</li>
+                            <li>{t("howToUseStep3")}</li>
+                            <li>{t("howToUseStep4")}</li>
                         </ol>
                     </div>
                 </header>
@@ -183,17 +169,17 @@ export default function Home() {
                     {/* 폼 영역 */}
                     <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-100 sm:p-6 form-panel">
                         <h2 className="mb-4 text-sm font-semibold tracking-tight text-slate-900 sm:text-base">
-                            카드 내용 설정
+                            {t("formTitle")}
                         </h2>
 
                         <div className="flex flex-col gap-4">
                             <Field
-                                label="오늘의 한 줄"
+                                label={t("textMainLabel")}
                                 value={form.textMain}
                                 onChange={(v) => handleChange("textMain", v)}
                             />
                             <Field
-                                label="보조 문장 (선택)"
+                                label={t("textSecondaryLabel")}
                                 textarea
                                 rows={3}
                                 value={form.textSecondary}
@@ -201,43 +187,47 @@ export default function Home() {
                             />
 
                             <div className="flex flex-col gap-4">
-                                <Field label="날짜" value={form.date} onChange={(v) => handleChange("date", v)} />
+                                <Field
+                                    label={t("dateLabel")}
+                                    value={form.date}
+                                    onChange={(v) => handleChange("date", v)}
+                                />
                                 <fieldset className="flex flex-col gap-2 text-xs sm:text-sm">
-                                    <legend className="text-xs font-medium text-slate-700">오늘의 기분</legend>
+                                    <legend className="text-xs font-medium text-slate-700">{t("moodLabel")}</legend>
                                     <div className="flex flex-wrap gap-2">
                                         <ToggleChip
                                             active={form.mood === "calm"}
-                                            label="😌 차분함"
+                                            label={t("moodCalm")}
                                             onClick={() => handleChange("mood", "calm")}
                                         />
                                         <ToggleChip
                                             active={form.mood === "happy"}
-                                            label="😊 좋음"
+                                            label={t("moodHappy")}
                                             onClick={() => handleChange("mood", "happy")}
                                         />
                                         <ToggleChip
                                             active={form.mood === "tired"}
-                                            label="😮‍💨 피곤함"
+                                            label={t("moodTired")}
                                             onClick={() => handleChange("mood", "tired")}
                                         />
                                         <ToggleChip
                                             active={form.mood === "focused"}
-                                            label="🔥 집중"
+                                            label={t("moodFocused")}
                                             onClick={() => handleChange("mood", "focused")}
                                         />
                                     </div>
                                     <label className="mt-1 flex flex-col gap-1">
-                                        <span className="text-[11px] text-slate-500">기분 문구 (선택)</span>
+                                        <span className="text-[11px] text-slate-500">{t("moodTextPlaceholder")}</span>
                                         <input
                                             type="text"
                                             placeholder={
                                                 form.mood === "happy"
-                                                    ? "좋은 하루"
+                                                    ? t("moodPlaceholderHappy")
                                                     : form.mood === "tired"
-                                                    ? "조금 지침"
+                                                    ? t("moodPlaceholderTired")
                                                     : form.mood === "focused"
-                                                    ? "집중"
-                                                    : "편한 하루"
+                                                    ? t("moodPlaceholderFocused")
+                                                    : t("moodPlaceholderCalm")
                                             }
                                             value={form.moodText ?? ""}
                                             onChange={(e) => handleChange("moodText", e.target.value)}
@@ -245,7 +235,7 @@ export default function Home() {
                                         />
                                     </label>
                                     <div className="flex flex-col gap-1">
-                                        <span className="text-[11px] text-slate-500">기분 이모지</span>
+                                        <span className="text-[11px] text-slate-500">{t("moodEmojiLabel")}</span>
                                         <div className="flex flex-wrap gap-1">
                                             {MOOD_EMOJI_OPTIONS.map((emoji) => (
                                                 <button
@@ -271,17 +261,19 @@ export default function Home() {
 
                             <div className="mt-2 flex flex-col gap-4 border-t border-dashed border-slate-200 pt-4">
                                 <fieldset className="flex flex-col gap-2">
-                                    <legend className="text-xs font-medium text-slate-700">배경 선택</legend>
+                                    <legend className="text-xs font-medium text-slate-700">
+                                        {t("backgroundLabel")}
+                                    </legend>
 
                                     <div className="flex flex-wrap gap-2 text-xs sm:text-sm">
                                         <ToggleChip
                                             active={form.backgroundType === "gradient"}
-                                            label="그라데이션 배경"
+                                            label={t("gradientBg")}
                                             onClick={() => handleChange("backgroundType", "gradient")}
                                         />
                                         <ToggleChip
                                             active={form.backgroundType === "image"}
-                                            label="사진 업로드"
+                                            label={t("photoUpload")}
                                             onClick={() => handleChange("backgroundType", "image")}
                                         />
                                     </div>
@@ -289,19 +281,21 @@ export default function Home() {
                                     {form.backgroundType === "image" && (
                                         <div className="mt-2 space-y-3">
                                             <label className="flex flex-col gap-1.5 text-xs sm:text-sm">
-                                                <span className="font-medium text-slate-700">배경 사진 업로드</span>
+                                                <span className="font-medium text-slate-700">
+                                                    {t("backgroundPhotoLabel")}
+                                                </span>
                                                 <input
                                                     type="file"
                                                     accept="image/*"
                                                     onChange={handleImageChange}
                                                     className="block cursor-pointer text-xs text-slate-600 file:mr-3 file:cursor-pointer file:rounded-full file:border-0 file:bg-slate-900 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-slate-50 hover:file:bg-black"
                                                 />
-                                                <span className="text-[11px] text-slate-400">
-                                                    인물/풍경 사진, 스크린샷 등 어떤 이미지든 올릴 수 있어요.
-                                                </span>
+                                                <span className="text-[11px] text-slate-400">{t("uploadHint")}</span>
                                                 {form.imageDataUrl && (
                                                     <span className="text-[11px] text-slate-500">
-                                                        현재 적용된 사진: {form.imageFileName ?? "이전에 선택한 이미지"}
+                                                        {t("currentPhoto", {
+                                                            name: form.imageFileName ?? t("previousPhoto"),
+                                                        })}
                                                     </span>
                                                 )}
                                             </label>
@@ -310,7 +304,7 @@ export default function Home() {
                                                 <label className="flex flex-col gap-1 text-[11px] sm:text-xs">
                                                     <div className="flex items-center justify-between">
                                                         <span className="font-medium text-slate-700">
-                                                            배경 어둡기 (텍스트 가독성)
+                                                            {t("overlayLabel")}
                                                         </span>
                                                         <span className="text-[10px] text-slate-400">
                                                             {form.overlayIntensity ?? 85}%
@@ -333,8 +327,7 @@ export default function Home() {
                                                         className="accent-slate-900"
                                                     />
                                                     <span className="text-[10px] text-slate-400">
-                                                        값이 높을수록 사진 위에 더 어두운 레이어를 씌워서 글자가 잘
-                                                        보이게 합니다.
+                                                        {t("overlayHint")}
                                                     </span>
                                                 </label>
                                             )}
@@ -345,22 +338,22 @@ export default function Home() {
                                         <div className="mt-2 flex flex-wrap gap-2 text-xs sm:text-sm">
                                             <TemplateChip
                                                 id="sunset"
-                                                label="노을"
-                                                description="보라 · 오렌지 그라데이션"
+                                                label={t("gradientSunset")}
+                                                description={t("gradientSunsetDesc")}
                                                 active={form.gradient === "sunset"}
                                                 onClick={() => handleChange("gradient", "sunset")}
                                             />
                                             <TemplateChip
                                                 id="ocean"
-                                                label="바다"
-                                                description="블루 · 민트 그라데이션"
+                                                label={t("gradientOcean")}
+                                                description={t("gradientOceanDesc")}
                                                 active={form.gradient === "ocean"}
                                                 onClick={() => handleChange("gradient", "ocean")}
                                             />
                                             <TemplateChip
                                                 id="mono"
-                                                label="모노톤"
-                                                description="차분한 회색 톤"
+                                                label={t("gradientMono")}
+                                                description={t("gradientMonoDesc")}
                                                 active={form.gradient === "mono"}
                                                 onClick={() => handleChange("gradient", "mono")}
                                             />
@@ -369,7 +362,9 @@ export default function Home() {
                                 </fieldset>
 
                                 <fieldset className="flex flex-col gap-2">
-                                    <legend className="text-xs font-medium text-slate-700">카드 비율</legend>
+                                    <legend className="text-xs font-medium text-slate-700">
+                                        {t("cardRatioLabel")}
+                                    </legend>
                                     <div className="flex flex-wrap gap-1.5 text-[11px] sm:gap-2 sm:text-xs">
                                         <ToggleChip
                                             active={form.cardAspect === "9_16" || !form.cardAspect}
@@ -407,9 +402,7 @@ export default function Home() {
                                             onClick={() => handleChange("cardAspect", "16_9" as CardAspectId)}
                                         />
                                     </div>
-                                    <span className="text-[10px] text-slate-400">
-                                        세로(9:16~3:4) · 정사각형(1:1) · 가로(3:2~16:9)
-                                    </span>
+                                    <span className="text-[10px] text-slate-400">{t("ratioHint")}</span>
                                 </fieldset>
                             </div>
                         </div>
@@ -419,11 +412,10 @@ export default function Home() {
                     <section className="flex flex-col gap-3">
                         <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                             <h2 className="text-sm font-semibold tracking-tight text-slate-900 sm:text-base whitespace-nowrap">
-                                스토리 카드 미리보기
+                                {t("previewTitle")}
                             </h2>
                             <p className="text-[11px] text-slate-500 sm:text-xs whitespace-nowrap">
-                                💡 글자 드래그: 위치 변경 · 클릭: 색상 변경 · 오른쪽 ▐ 드래그: 넓이 조절 (저장 시 ▐·색상
-                                UI는 제외됨)
+                                {t("previewHint")}
                             </p>
                         </div>
 
@@ -437,6 +429,18 @@ export default function Home() {
                                 cardRef={cardRef}
                                 activeTextTarget={activeTextTarget}
                                 onTextTargetSelect={setActiveTextTarget}
+                                translations={{
+                                    placeholderMain: t("placeholderMain"),
+                                    placeholderDate: t("placeholderDate"),
+                                    textColor: t("textColor"),
+                                    dragHint: t("dragHint"),
+                                    resizeHint: t("resizeHint"),
+                                    altBackground: t("altBackground"),
+                                    moodPlaceholderCalm: t("moodPlaceholderCalm"),
+                                    moodPlaceholderHappy: t("moodPlaceholderHappy"),
+                                    moodPlaceholderTired: t("moodPlaceholderTired"),
+                                    moodPlaceholderFocused: t("moodPlaceholderFocused"),
+                                }}
                                 onTextColorChange={(target, color) => {
                                     if (target === "main") {
                                         handleChange("textMainColor", color);
@@ -469,15 +473,11 @@ export default function Home() {
                                 onClick={handleDownloadPng}
                                 className="inline-flex items-center gap-2 rounded-full border border-slate-900 bg-slate-900 px-4 py-1.5 text-xs font-medium text-slate-50 shadow-sm transition hover:-translate-y-0.5 hover:bg-black hover:shadow-md active:translate-y-0"
                             >
-                                <span>PNG로 카드 저장</span>
+                                <span>{t("downloadBtn")}</span>
                             </button>
                         </div>
 
-                        <p className="text-xs leading-relaxed text-slate-500 sm:text-[13px]">
-                            이 페이지는 클라이언트 사이드로만 동작하며, 입력한 정보와 이미지는 브라우저를 벗어나지
-                            않습니다. 만든 카드는 인스타 스토리, 카카오톡 프로필, 블로그 글 썸네일 등 원하는 곳에
-                            자유롭게 사용해 보세요.
-                        </p>
+                        <p className="text-xs leading-relaxed text-slate-500 sm:text-[13px]">{t("disclaimer")}</p>
                     </section>
                 </main>
             </div>
@@ -564,6 +564,19 @@ function TemplateChip({ label, description, active, onClick }: TemplateChipProps
 
 type PositionTarget = "main" | "secondary" | "date" | "mood";
 
+interface CardPreviewTranslations {
+    placeholderMain: string;
+    placeholderDate: string;
+    textColor: string;
+    dragHint: string;
+    resizeHint: string;
+    altBackground: string;
+    moodPlaceholderCalm: string;
+    moodPlaceholderHappy: string;
+    moodPlaceholderTired: string;
+    moodPlaceholderFocused: string;
+}
+
 interface CardPreviewProps {
     form: StoryFormState;
     activeTextTarget?: "main" | "secondary" | "date" | "mood" | null;
@@ -571,7 +584,21 @@ interface CardPreviewProps {
     onTextColorChange?: (target: "main" | "secondary" | "date" | "mood", color: string) => void;
     onPositionChange?: (target: PositionTarget, pos: { x: number; y: number }) => void;
     onWidthChange?: (target: PositionTarget, width: number) => void;
+    translations?: CardPreviewTranslations;
 }
+
+const defaultTranslations: CardPreviewTranslations = {
+    placeholderMain: "오늘을 한 문장으로 남겨보세요.",
+    placeholderDate: "오늘",
+    textColor: "텍스트 색상",
+    dragHint: "드래그: 위치 변경 · 클릭: 색상 변경",
+    resizeHint: "드래그: 넓이 조절",
+    altBackground: "배경",
+    moodPlaceholderCalm: "편한 하루",
+    moodPlaceholderHappy: "좋은 하루",
+    moodPlaceholderTired: "조금 지침",
+    moodPlaceholderFocused: "집중",
+};
 
 function CardPreview({
     form,
@@ -581,6 +608,7 @@ function CardPreview({
     onTextColorChange,
     onPositionChange,
     onWidthChange,
+    translations: tr = defaultTranslations,
 }: CardPreviewProps & { cardRef: React.RefObject<HTMLDivElement | null> }) {
     const gradientBackground =
         form.gradient === "sunset"
@@ -598,12 +626,12 @@ function CardPreview({
 
     const defaultMoodLabel =
         form.mood === "happy"
-            ? "좋은 하루"
+            ? tr.moodPlaceholderHappy
             : form.mood === "tired"
-            ? "조금 지침"
+            ? tr.moodPlaceholderTired
             : form.mood === "focused"
-            ? "집중"
-            : "편한 하루";
+            ? tr.moodPlaceholderFocused
+            : tr.moodPlaceholderCalm;
     const moodLabel = form.moodText?.trim() || defaultMoodLabel;
 
     const defaultMoodEmoji =
@@ -737,9 +765,9 @@ function CardPreview({
         >
             <div className="relative h-full w-full">
                 {showImage && (
-                    <img
+                    <Image
                         src={form.imageDataUrl as string}
-                        alt="배경"
+                        alt={tr.altBackground}
                         className="absolute inset-0 h-full w-full object-cover"
                         style={{ zIndex: 0 }}
                     />
@@ -772,7 +800,7 @@ function CardPreview({
                         <div
                             className="inline-flex cursor-grab active:cursor-grabbing items-center gap-2 rounded-full bg-black/35 px-3 py-1 text-[11px] backdrop-blur-sm transition-colors hover:bg-black/50"
                             style={{ color: moodColor }}
-                            title="드래그: 위치 변경 · 클릭: 색상 변경"
+                            title={tr.dragHint}
                             onPointerDown={(ev) => onPointerDown("mood", ev)}
                             onPointerUp={(ev) => onPointerUp("mood", ev)}
                         >
@@ -783,7 +811,7 @@ function CardPreview({
                             <div
                                 data-card-export-ignore
                                 className="flex w-3 shrink-0 cursor-ew-resize items-center justify-end rounded-r-full pr-0.5 opacity-60 hover:opacity-100"
-                                title="드래그: 넓이 조절"
+                                title={tr.resizeHint}
                                 onPointerDown={(ev) => onResizePointerDown("mood", ev)}
                             >
                                 <span className="text-[10px]">▐</span>
@@ -794,7 +822,7 @@ function CardPreview({
                                 data-card-export-ignore
                                 className="absolute left-0 top-full z-20 mt-2 flex items-center gap-2 rounded-xl bg-white/95 px-3 py-1.5 text-[11px] text-slate-700 shadow-lg ring-1 ring-slate-200"
                             >
-                                <span>텍스트 색상</span>
+                                <span>{tr.textColor}</span>
                                 <input
                                     type="color"
                                     value={form.moodColor || "#f9fafb"}
@@ -815,17 +843,17 @@ function CardPreview({
                                 textShadow: "0 1px 6px rgba(15,23,42,0.9)",
                                 color: mainColor,
                             }}
-                            title="드래그: 위치 변경 · 클릭: 색상 변경"
+                            title={tr.dragHint}
                             onPointerDown={(ev) => onPointerDown("main", ev)}
                             onPointerUp={(ev) => onPointerUp("main", ev)}
                         >
-                            {form.textMain || "오늘을 한 문장으로 남겨보세요."}
+                            {form.textMain || tr.placeholderMain}
                         </p>
                         {onWidthChange && (
                             <div
                                 data-card-export-ignore
                                 className="flex w-3 shrink-0 cursor-ew-resize items-center justify-end pr-0.5 opacity-60 hover:opacity-100"
-                                title="드래그: 넓이 조절"
+                                title={tr.resizeHint}
                                 onPointerDown={(ev) => onResizePointerDown("main", ev)}
                             >
                                 <span className="text-[10px]">▐</span>
@@ -836,7 +864,7 @@ function CardPreview({
                                 data-card-export-ignore
                                 className="absolute left-0 top-full z-20 mt-2 flex items-center gap-2 rounded-xl bg-white/95 px-3 py-1.5 text-[11px] text-slate-700 shadow-lg ring-1 ring-slate-200"
                             >
-                                <span>텍스트 색상</span>
+                                <span>{tr.textColor}</span>
                                 <input
                                     type="color"
                                     value={form.textMainColor || "#f9fafb"}
@@ -862,7 +890,7 @@ function CardPreview({
                                     textShadow: "0 1px 4px rgba(15,23,42,0.8)",
                                     color: secondaryColor,
                                 }}
-                                title="드래그: 위치 변경 · 클릭: 색상 변경"
+                                title={tr.dragHint}
                                 onPointerDown={(ev) => onPointerDown("secondary", ev)}
                                 onPointerUp={(ev) => onPointerUp("secondary", ev)}
                             >
@@ -872,7 +900,7 @@ function CardPreview({
                                 <div
                                     data-card-export-ignore
                                     className="flex w-3 shrink-0 cursor-ew-resize items-center justify-end pr-0.5 opacity-60 hover:opacity-100"
-                                    title="드래그: 넓이 조절"
+                                    title={tr.resizeHint}
                                     onPointerDown={(ev) => onResizePointerDown("secondary", ev)}
                                 >
                                     <span className="text-[10px]">▐</span>
@@ -883,7 +911,7 @@ function CardPreview({
                                     data-card-export-ignore
                                     className="absolute left-0 top-full z-20 mt-2 flex items-center gap-2 rounded-xl bg-white/95 px-3 py-1.5 text-[11px] text-slate-700 shadow-lg ring-1 ring-slate-200"
                                 >
-                                    <span>텍스트 색상</span>
+                                    <span>{tr.textColor}</span>
                                     <input
                                         type="color"
                                         value={form.textSecondaryColor || "#e5e7eb"}
@@ -902,17 +930,17 @@ function CardPreview({
                         <div
                             className="cursor-grab active:cursor-grabbing rounded-full bg-black/35 px-3 py-1 text-[11px] font-medium backdrop-blur-sm transition-colors hover:bg-black/50"
                             style={{ color: dateColor }}
-                            title="드래그: 위치 변경 · 클릭: 색상 변경"
+                            title={tr.dragHint}
                             onPointerDown={(ev) => onPointerDown("date", ev)}
                             onPointerUp={(ev) => onPointerUp("date", ev)}
                         >
-                            {form.date || "오늘"}
+                            {form.date || tr.placeholderDate}
                         </div>
                         {onWidthChange && (
                             <div
                                 data-card-export-ignore
                                 className="flex w-3 shrink-0 cursor-ew-resize items-center justify-end rounded-r-full pr-0.5 opacity-60 hover:opacity-100"
-                                title="드래그: 넓이 조절"
+                                title={tr.resizeHint}
                                 onPointerDown={(ev) => onResizePointerDown("date", ev)}
                             >
                                 <span className="text-[10px]">▐</span>
@@ -923,7 +951,7 @@ function CardPreview({
                                 data-card-export-ignore
                                 className="absolute bottom-full right-0 z-20 mb-2 flex items-center gap-2 rounded-xl bg-white/95 px-3 py-1.5 text-[11px] text-slate-700 shadow-lg ring-1 ring-slate-200"
                             >
-                                <span>텍스트 색상</span>
+                                <span>{tr.textColor}</span>
                                 <input
                                     type="color"
                                     value={form.dateColor || "#f9fafb"}
