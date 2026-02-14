@@ -5,6 +5,9 @@ import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import type { Metadata } from "next";
 
+/** Cloudflare Pages: non-static routes must use Edge Runtime */
+export const runtime = "edge";
+
 type Props = {
     children: React.ReactNode;
     params: Promise<{ locale: string }>;
