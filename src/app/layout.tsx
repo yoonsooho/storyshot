@@ -3,9 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { headers } from "next/headers";
 import "./globals.css";
 
-/** Cloudflare Pages: root layout must run on Edge when using edge in [locale] */
-export const runtime = "edge";
-
 const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
 const geistSans = Geist({
