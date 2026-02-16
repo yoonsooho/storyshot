@@ -3,7 +3,7 @@
 StoryShot은 **사진 + 텍스트로 인스타 스토리/카카오톡 프로필/블로그 썸네일에 쓰기 좋은 9:16 카드**를 만드는 개인 사이드 프로젝트입니다.
 
 -   **Live**: https://storyshot.pages.dev/
--   **Stack**: Next.js (App Router), React, TypeScript, Tailwind CSS v4
+-   **Stack**: Next.js (App Router), React, TypeScript, Tailwind CSS v4, next-intl (ko/en)
 
 예시 썸네일(OG 이미지):
 
@@ -27,6 +27,22 @@ StoryShot은 **사진 + 텍스트로 인스타 스토리/카카오톡 프로필/
     -   저장한 이미지를 그대로 인스타/카톡/블로그 등에 업로드해서 사용 가능
 
 모든 동작은 **클라이언트 사이드에서만 수행**되며, 업로드한 이미지/입력한 텍스트는 서버에 저장되지 않습니다.
+
+---
+
+### 다국어 (next-intl)
+
+- **한국어(ko) / 영어(en)** 지원. URL은 `/ko`, `/en` 이며, 루트 `/` 접속 시 `/ko` 로 리다이렉트됩니다.
+- **LocaleSwitcher** 컴포넌트로 같은 페이지의 `/ko` ↔ `/en` 전환이 가능합니다.
+- **구성**: `middleware`에서 locale 리다이렉트, `src/i18n/request.ts`에서 locale별 `messages` 로드, `[locale]/layout`에서 `NextIntlClientProvider`·메타데이터, 페이지에서 `useTranslations('home')`로 `t()` 사용. 상세는 `docs/I18N_GUIDE.md`, `docs/I18N_FLOW.md` 참고.
+
+---
+
+### Lighthouse / 성능 (FCP 대응)
+
+- **First Contentful Paint (NO_FCP)** 로 Performance 점수가 측정되지 않던 문제를 아래처럼 맞춰 두었습니다.
+  - **원인**: 페이지/폼/카드 진입 애니메이션이 모두 `opacity: 0`으로 시작해, 그동안 브라우저가 "그린 콘텐츠"가 없다고 판단함.
+  - **해결**: 키프레임과 `.card-preview-initial`의 시작 `opacity`를 **0.1**로 변경해, 첫 프레임부터 픽셀이 그려지도록 하고 transform 애니메이션은 유지. FCP가 정상 측정되도록 함.
 
 ---
 
