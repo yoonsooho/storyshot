@@ -64,6 +64,8 @@ export default function Home() {
     const [form, setForm] = useState<StoryFormState>(initialState);
     const [mounted, setMounted] = useState(false);
     const [activeTextTarget, setActiveTextTarget] = useState<"main" | "secondary" | "date" | "mood" | null>(null);
+    const [useMethodOpen, setUseMethodOpen] = useState(false);
+    const [learnMoreOpen, setLearnMoreOpen] = useState(false);
     const cardRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
@@ -143,31 +145,41 @@ export default function Home() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 px-4 py-10 text-slate-900 page-shell">
-            <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
+        <div className="min-h-screen bg-slate-50 px-3 py-6 text-slate-900 page-shell sm:px-4 sm:py-10">
+            <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 sm:gap-6">
                 <header className="flex flex-col gap-2">
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{t("title")}</h1>
+                        <h1 className="min-w-0 flex-1 text-xl font-semibold tracking-tight sm:text-2xl md:text-3xl">{t("title")}</h1>
                         <LocaleSwitcher />
                     </div>
-                    <p className="max-w-2xl text-sm text-slate-600 sm:text-base">{t("subtitle")}</p>
-                    <div className="mt-3 max-w-2xl rounded-2xl bg-slate-900/3 px-3 py-2.5 text-[11px] text-slate-700 ring-1 ring-slate-100 sm:text-xs">
-                        <p className="font-medium text-slate-900">{t("howToUse")}</p>
-                        <ol className="mt-1.5 list-decimal space-y-1 pl-4">
-                            <li>{t("howToUseStep1")}</li>
-                            <li>{t("howToUseStep2")}</li>
-                            <li>{t("howToUseStep3")}</li>
-                            <li>{t("howToUseStep4")}</li>
-                        </ol>
-                    </div>
+                    <p className="max-w-2xl text-[13px] leading-relaxed text-slate-600 sm:text-sm md:text-base">{t("subtitle")}</p>
+                    <button
+                        type="button"
+                        onClick={() => setUseMethodOpen((o) => !o)}
+                        className="mt-2 flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-700"
+                        aria-expanded={useMethodOpen}
+                    >
+                        <span className={useMethodOpen ? "rotate-90" : ""} aria-hidden>▸</span>
+                        {useMethodOpen ? t("howToUseToggleClose") : t("howToUseToggle")}
+                    </button>
+                    {useMethodOpen && (
+                        <div className="mt-2 max-w-2xl rounded-xl border border-slate-200 bg-white/80 px-3 py-2.5 text-[11px] text-slate-600 sm:text-xs">
+                            <ol className="list-decimal space-y-1 pl-4">
+                                <li>{t("howToUseStep1")}</li>
+                                <li>{t("howToUseStep2")}</li>
+                                <li>{t("howToUseStep3")}</li>
+                                <li>{t("howToUseStep4")}</li>
+                            </ol>
+                        </div>
+                    )}
                 </header>
 
                 {/* 구글 에드센스: 승인 후 AdSense에서 광고 단위 생성 → adSlot을 해당 슬롯 ID로 교체 */}
                 <AdBanner adSlot="REPLACE_WITH_YOUR_SLOT_ID" className="my-2" />
 
-                <main className="grid gap-6 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1.2fr)]">
+                <main className="grid gap-5 sm:gap-6 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1.2fr)]">
                     {/* 폼 영역 */}
-                    <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-100 sm:p-6 form-panel">
+                    <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100 sm:p-6 form-panel">
                         <h2 className="mb-4 text-sm font-semibold tracking-tight text-slate-900 sm:text-base">
                             {t("formTitle")}
                         </h2>
@@ -231,7 +243,7 @@ export default function Home() {
                                             }
                                             value={form.moodText ?? ""}
                                             onChange={(e) => handleChange("moodText", e.target.value)}
-                                            className="h-9 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 shadow-inner shadow-slate-100 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-200"
+                                            className="min-h-[44px] rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 shadow-inner shadow-slate-100 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-200 sm:h-9 sm:py-0"
                                         />
                                     </label>
                                     <div className="flex flex-col gap-1">
@@ -244,7 +256,7 @@ export default function Home() {
                                                     onClick={() =>
                                                         handleChange("moodEmoji", form.moodEmoji === emoji ? "" : emoji)
                                                     }
-                                                    className={`flex h-8 w-8 items-center justify-center rounded-lg border text-lg transition ${
+                                                    className={`flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border text-lg transition sm:h-8 sm:w-8 sm:min-h-0 sm:min-w-0 ${
                                                         (form.moodEmoji || defaultMoodEmojiFor(form.mood)) === emoji
                                                             ? "border-slate-900 bg-slate-100 ring-1 ring-slate-900"
                                                             : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
@@ -420,7 +432,7 @@ export default function Home() {
                         </div>
 
                         <div
-                            className={`relative flex min-h-[420px] flex-1 items-center justify-center rounded-2xl bg-slate-900/5 p-3 sm:min-h-[520px] md:min-h-[640px] card-preview-shell sm:p-4 ${
+                            className={`relative flex min-h-[280px] flex-1 items-center justify-center rounded-2xl bg-slate-900/5 p-3 card-preview-shell sm:min-h-[420px] sm:p-4 md:min-h-[520px] lg:min-h-[640px] ${
                                 mounted ? "card-preview-enter" : "card-preview-initial"
                             }`}
                         >
@@ -471,7 +483,7 @@ export default function Home() {
                             <button
                                 type="button"
                                 onClick={handleDownloadPng}
-                                className="inline-flex items-center gap-2 rounded-full border border-slate-900 bg-slate-900 px-4 py-1.5 text-xs font-medium text-slate-50 shadow-sm transition hover:-translate-y-0.5 hover:bg-black hover:shadow-md active:translate-y-0"
+                                className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-2 rounded-full border border-slate-900 bg-slate-900 px-5 py-2.5 text-sm font-medium text-slate-50 shadow-sm transition hover:-translate-y-0.5 hover:bg-black hover:shadow-md active:translate-y-0"
                             >
                                 <span>{t("downloadBtn")}</span>
                             </button>
@@ -480,6 +492,38 @@ export default function Home() {
                         <p className="text-xs leading-relaxed text-slate-500 sm:text-[13px]">{t("disclaimer")}</p>
                     </section>
                 </main>
+
+                {/* 소개 · FAQ: 접었다 펼치기 */}
+                <div className="border-t border-slate-200 pt-6">
+                    <button
+                        type="button"
+                        onClick={() => setLearnMoreOpen((o) => !o)}
+                        className="flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-700"
+                        aria-expanded={learnMoreOpen}
+                    >
+                        <span className={learnMoreOpen ? "rotate-90" : ""} aria-hidden>▸</span>
+                        {learnMoreOpen ? t("learnMoreClose") : t("learnMore")}
+                    </button>
+                    {learnMoreOpen && (
+                        <div className="mt-4 space-y-6 text-slate-600">
+                            <div>
+                                <h3 className="mb-1.5 text-sm font-semibold text-slate-900">{t("aboutTitle")}</h3>
+                                <p className="text-[13px] leading-relaxed">{t("aboutBody")}</p>
+                            </div>
+                            <div>
+                                <h3 className="mb-3 text-sm font-semibold text-slate-900">{t("faqTitle")}</h3>
+                                <dl className="space-y-3">
+                                    {([1, 2, 3, 4, 5, 6] as const).map((n) => (
+                                        <div key={n}>
+                                            <dt className="text-[13px] font-medium text-slate-800">{t(`faqQ${n}`)}</dt>
+                                            <dd className="mt-0.5 text-[12px] leading-relaxed text-slate-600">{t(`faqA${n}`)}</dd>
+                                        </div>
+                                    ))}
+                                </dl>
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );
@@ -506,7 +550,7 @@ function Field({ label, value, onChange, textarea, rows = 3 }: FieldProps) {
                 />
             ) : (
                 <input
-                    className="h-9 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 shadow-inner shadow-slate-100 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-200"
+                    className="min-h-[44px] rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 shadow-inner shadow-slate-100 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-200 sm:h-9 sm:py-0"
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
                 />
@@ -526,7 +570,7 @@ function ToggleChip({ active, label, onClick }: ToggleChipProps) {
         <button
             type="button"
             onClick={onClick}
-            className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 transition ${
+            className={`inline-flex min-h-[44px] items-center justify-center gap-1 rounded-full border px-4 py-2.5 transition ${
                 active
                     ? "border-slate-900 bg-slate-900 text-slate-50 shadow-sm"
                     : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
@@ -550,7 +594,7 @@ function TemplateChip({ label, description, active, onClick }: TemplateChipProps
         <button
             type="button"
             onClick={onClick}
-            className={`flex min-w-[120px] flex-col items-start rounded-xl border px-3 py-2 text-left transition ${
+            className={`flex min-h-[44px] min-w-[120px] flex-col justify-center rounded-xl border px-3 py-2.5 text-left transition sm:min-h-0 ${
                 active
                     ? "border-slate-900 bg-slate-900 text-slate-50 shadow-sm"
                     : "border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50"

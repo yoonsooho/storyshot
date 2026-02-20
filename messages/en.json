@@ -7,6 +7,10 @@
         "title": "StoryShot – One-line Instagram story card maker",
         "subtitle": "Pick a photo or background and write a line for today. Create story cards for Instagram stories, KakaoTalk profile, or blog thumbnails.",
         "howToUse": "How to use",
+        "howToUseToggle": "Show how to use",
+        "howToUseToggleClose": "Hide",
+        "learnMore": "About · FAQ",
+        "learnMoreClose": "Close",
         "howToUseStep1": "In the left form, enter your one-line, optional subtext, and date. Choose your mood (calm / good / tired / focused), or add a custom mood phrase or emoji.",
         "howToUseStep2": "Choose a gradient or photo background. For photos, use the darken slider for text readability and pick a card ratio (9:16, 4:5, 1:1, etc.).",
         "howToUseStep3": "On the preview card, drag text blocks to move them and click to change color. Drag the width handle (▐) on the right to adjust text width.",
@@ -54,6 +58,21 @@
         "resizeHint": "Drag: adjust width",
         "alertCardNotFound": "Could not find the card area.",
         "alertSaveError": "Something went wrong while saving the image.",
-        "altBackground": "Background"
+        "altBackground": "Background",
+        "aboutTitle": "About StoryShot",
+        "aboutBody": "StoryShot is a web tool that lets you create one-line story cards for Instagram stories, KakaoTalk profile photos, blog thumbnails, and more, then save them as PNG. Everything runs in your browser; your text and uploaded images are never sent to any server.",
+        "faqTitle": "Frequently asked questions",
+        "faqQ1": "Where can I use the saved image?",
+        "faqA1": "You can use it anywhere: Instagram stories, KakaoTalk profile, blog thumbnails, social posts, etc. Commercial use is fine.",
+        "faqQ2": "Is my data stored on a server?",
+        "faqA2": "No. This page runs entirely in your browser. Your one-line text, subtext, and uploaded photos are not sent to any server. Only when you click \"Save card as PNG\" does a file download to your device.",
+        "faqQ3": "Can I change the card ratio?",
+        "faqA3": "Yes. You can choose from 9:16 (story), 4:5, 1:1 (square), 3:2, 16:9, and other ratios in the card ratio section.",
+        "faqQ4": "Can I move the text or change its color?",
+        "faqA4": "Yes. On the preview card, drag a text block to move it and click it to change the text color. You can also drag the width handle (▐) on the right to adjust the text width.",
+        "faqQ5": "Can I use it on mobile?",
+        "faqA5": "Yes. The site works in mobile browsers. Editing the card may be easier on a computer.",
+        "faqQ6": "Is it free?",
+        "faqA6": "Yes. StoryShot is free to use."
     }
 }
