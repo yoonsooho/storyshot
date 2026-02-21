@@ -6,6 +6,11 @@
     "home": {
         "title": "StoryShot – One-line Instagram story card maker",
         "subtitle": "Pick a photo or background and write a line for today. Create story cards for Instagram stories, KakaoTalk profile, or blog thumbnails.",
+        "introShort": "StoryShot is a free tool to create one-line story cards for Instagram, KakaoTalk, and blog thumbnails and save them as PNG. Your text and photos are never sent to a server.",
+        "tipsTitle": "Tips",
+        "tips1": "Use 9:16 ratio for Instagram stories and reels.",
+        "tips2": "With a photo background, use the \"Darken background\" slider to improve text readability.",
+        "tips3": "Saved PNGs don't include the width handle or color UI—just the final card.",
         "howToUse": "How to use",
         "howToUseToggle": "Show how to use",
         "howToUseToggleClose": "Hide",

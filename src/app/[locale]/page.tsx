@@ -153,6 +153,15 @@ export default function Home() {
                         <LocaleSwitcher />
                     </div>
                     <p className="max-w-2xl text-[13px] leading-relaxed text-slate-600 sm:text-sm md:text-base">{t("subtitle")}</p>
+                    <p className="mt-2 max-w-2xl text-[12px] leading-relaxed text-slate-500 sm:text-[13px]">{t("introShort")}</p>
+                    <div className="mt-3 max-w-2xl rounded-xl border border-slate-200/80 bg-slate-50/50 px-3 py-2.5 text-[11px] text-slate-600 sm:text-xs">
+                        <p className="font-medium text-slate-700">{t("tipsTitle")}</p>
+                        <ul className="mt-1.5 list-disc space-y-0.5 pl-4">
+                            <li>{t("tips1")}</li>
+                            <li>{t("tips2")}</li>
+                            <li>{t("tips3")}</li>
+                        </ul>
+                    </div>
                     <button
                         type="button"
                         onClick={() => setUseMethodOpen((o) => !o)}
@@ -173,9 +182,6 @@ export default function Home() {
                         </div>
                     )}
                 </header>
-
-                {/* 구글 에드센스: 승인 후 AdSense에서 광고 단위 생성 → adSlot을 해당 슬롯 ID로 교체 */}
-                <AdBanner adSlot="REPLACE_WITH_YOUR_SLOT_ID" className="my-2" />
 
                 <main className="grid gap-5 sm:gap-6 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1.2fr)]">
                     {/* 폼 영역 */}
@@ -492,6 +498,9 @@ export default function Home() {
                         <p className="text-xs leading-relaxed text-slate-500 sm:text-[13px]">{t("disclaimer")}</p>
                     </section>
                 </main>
+
+                {/* 구글 에드센스: 콘텐츠 아래 배치. 승인 후 adSlot을 광고 단위 ID로 교체 */}
+                <AdBanner adSlot="REPLACE_WITH_YOUR_SLOT_ID" className="my-4" />
 
                 {/* 소개 · FAQ: 접었다 펼치기 */}
                 <div className="border-t border-slate-200 pt-6">
