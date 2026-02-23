@@ -7,6 +7,8 @@ export type GradientId = "sunset" | "ocean" | "mono";
 export type CardAspectId = "9_16" | "4_5" | "3_4" | "1_1" | "3_2" | "4_3" | "16_9";
 
 export interface StoryFormState {
+    /** 제목 (선택). 있으면 카드 상단에 표시 */
+    title?: string;
     textMain: string;
     textSecondary: string;
     date: string;
@@ -29,14 +31,18 @@ export interface StoryFormState {
     cardAspect?: CardAspectId;
     /** 글자 블록 위치 (카드 내 %). 드래그로 변경 가능 */
     positionMood?: { x: number; y: number };
+    positionTitle?: { x: number; y: number };
     positionMain?: { x: number; y: number };
     positionSecondary?: { x: number; y: number };
     positionDate?: { x: number; y: number };
     /** 글자 블록 가로 넓이 (카드 대비 %). 리사이즈 핸들로 조절 */
     widthMood?: number;
+    widthTitle?: number;
     widthMain?: number;
     widthSecondary?: number;
     widthDate?: number;
+    /** 제목 텍스트 색상 (CSS color) */
+    titleColor?: string;
     /** 오늘의 기분 문구 (비어 있으면 mood에 따른 기본 문구 사용) */
     moodText?: string;
     /** 오늘의 기분 이모지 (비어 있으면 mood에 따른 기본 이모지 사용) */
@@ -45,6 +51,7 @@ export interface StoryFormState {
 
 export const DEFAULT_POSITIONS = {
     mood: { x: 6, y: 6 },
+    title: { x: 10, y: 28 },
     main: { x: 10, y: 40 },
     secondary: { x: 10, y: 48 },
     date: { x: 72, y: 85 },
@@ -52,6 +59,7 @@ export const DEFAULT_POSITIONS = {
 
 export const DEFAULT_WIDTHS = {
     mood: 50,
+    title: 85,
     main: 85,
     secondary: 85,
     date: 40,
@@ -72,6 +80,7 @@ export function StoryCardPreview({ form, cardRef }: StoryCardPreviewProps) {
 
     const showImage = form.backgroundType === "image" && form.imageDataUrl;
     const overlayIntensity = (form.overlayIntensity ?? 85) / 100;
+    const titleColor = form.titleColor || "#f9fafb";
     const mainColor = form.textMainColor || "#f9fafb";
     const secondaryColor = form.textSecondaryColor || "#e5e7eb";
     const dateColor = form.dateColor || "#f9fafb";
@@ -90,10 +99,12 @@ export function StoryCardPreview({ form, cardRef }: StoryCardPreviewProps) {
     const isLandscape = form.cardAspect === "3_2" || form.cardAspect === "4_3" || form.cardAspect === "16_9";
 
     const posMood = form.positionMood ?? DEFAULT_POSITIONS.mood;
+    const posTitle = form.positionTitle ?? DEFAULT_POSITIONS.title;
     const posMain = form.positionMain ?? DEFAULT_POSITIONS.main;
     const posSecondary = form.positionSecondary ?? DEFAULT_POSITIONS.secondary;
     const posDate = form.positionDate ?? DEFAULT_POSITIONS.date;
     const widthMood = form.widthMood ?? DEFAULT_WIDTHS.mood;
+    const widthTitle = form.widthTitle ?? DEFAULT_WIDTHS.title;
     const widthMain = form.widthMain ?? DEFAULT_WIDTHS.main;
     const widthSecondary = form.widthSecondary ?? DEFAULT_WIDTHS.secondary;
     const widthDate = form.widthDate ?? DEFAULT_WIDTHS.date;
@@ -161,6 +172,20 @@ export function StoryCardPreview({ form, cardRef }: StoryCardPreviewProps) {
                         <span>{moodLabel}</span>
                     </div>
 
+                    {form.title?.trim() ? (
+                        <p
+                            className="absolute max-w-[var(--block-width)] break-words text-base font-bold leading-snug sm:text-lg"
+                            style={{
+                                left: `${posTitle.x}%`,
+                                top: `${posTitle.y}%`,
+                                textShadow: "0 1px 6px rgba(15,23,42,0.9)",
+                                color: titleColor,
+                                ["--block-width" as string]: `${widthTitle}%`,
+                            }}
+                        >
+                            {form.title.trim()}
+                        </p>
+                    ) : null}
                     <p
                         className="absolute max-w-[var(--block-width)] break-words text-lg font-semibold leading-relaxed sm:text-xl"
                         style={{

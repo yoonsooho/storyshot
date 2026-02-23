@@ -6,11 +6,15 @@ import { useTranslations } from "next-intl";
 import type { StoryFormState, GradientId, CardAspectId, MoodId } from "@/components/StoryCardPreview";
 import { DEFAULT_POSITIONS, DEFAULT_WIDTHS } from "@/components/StoryCardPreview";
 import { AdBanner } from "@/components/AdBanner";
-import { LocaleSwitcher } from "@/components/LocaleSwitcher";
+import { Header } from "@/components/Header";
+import { ShareCardModal } from "@/components/ShareCardModal";
 import { trackEvent } from "@/lib/analytics";
+import { uploadCardToGallery } from "@/lib/supabase/upload";
+import { isGalleryEnabled } from "@/lib/supabase/client";
 import Image from "next/image";
 
 const initialState: StoryFormState = {
+    title: "",
     textMain: "오늘은 여기까지. 그래도 잘했다.",
     textSecondary: "작은 진도라도 매일 나아가면 언젠가는 도착한다.",
     date: "2026.02.10",
@@ -111,6 +115,53 @@ export default function Home() {
         }
     };
 
+    const [shareLoading, setShareLoading] = useState(false);
+    const [shareModalOpen, setShareModalOpen] = useState(false);
+    const [shareCaption, setShareCaption] = useState("");
+
+    const handleOpenShareModal = () => {
+        if (!isGalleryEnabled) {
+            alert(t("shareNotConfigured"));
+            return;
+        }
+        setShareCaption([form.title ?? "", form.textMain, form.textSecondary].filter(Boolean).join("\n"));
+        setShareModalOpen(true);
+    };
+
+    const handleShareToGallery = async (caption: string) => {
+        if (typeof window === "undefined") return;
+        const target = cardRef.current;
+        if (!target) {
+            alert(t("alertCardNotFound"));
+            return;
+        }
+        setShareLoading(true);
+        try {
+            const dataUrl = await htmlToImage.toPng(target, {
+                cacheBust: true,
+                pixelRatio: window.devicePixelRatio || 1,
+                backgroundColor: "#ffffff",
+                filter: (node) => {
+                    if (node instanceof Element && node.closest?.("[data-card-export-ignore]")) return false;
+                    return true;
+                },
+            });
+            const locale = document.documentElement.lang || "ko";
+            const result = await uploadCardToGallery({ dataUrl, caption: caption.trim() || undefined, locale });
+            if (result) {
+                trackEvent("share_to_gallery", { locale });
+                window.location.href = `/${locale}/gallery`;
+            } else {
+                alert(t("shareError"));
+            }
+        } catch (e) {
+            console.error(e);
+            alert(t("shareError"));
+        } finally {
+            setShareLoading(false);
+        }
+    };
+
     const handleChange = <K extends keyof StoryFormState>(field: K, value: StoryFormState[K]) => {
         setForm((prev) => ({
             ...prev,
@@ -118,42 +169,78 @@ export default function Home() {
         }));
     };
 
+    const MAX_IMAGE_SIZE_MB = 10;
+    const MAX_IMAGE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024;
+
     const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
 
+        if (!file.type.startsWith("image/")) {
+            alert(t("imageUploadErrorType"));
+            event.target.value = "";
+            return;
+        }
+        if (file.size > MAX_IMAGE_BYTES) {
+            alert(t("imageUploadErrorSize", { max: MAX_IMAGE_SIZE_MB }));
+            event.target.value = "";
+            return;
+        }
+
         const reader = new FileReader();
         reader.onload = () => {
-            if (typeof reader.result === "string") {
-                setForm(
-                    (prev) =>
-                        ({
-                            ...prev,
-                            backgroundType: "image",
-                            imageDataUrl: reader.result,
-                            imageFileName: file.name,
-                        } as StoryFormState)
-                );
-
-                trackEvent("upload_background_image", {
-                    file_name: file.name,
-                    file_type: file.type,
-                });
+            try {
+                if (typeof reader.result === "string") {
+                    setForm(
+                        (prev) =>
+                            ({
+                                ...prev,
+                                backgroundType: "image",
+                                imageDataUrl: reader.result,
+                                imageFileName: file.name,
+                            } as StoryFormState)
+                    );
+                    trackEvent("upload_background_image", {
+                        file_name: file.name,
+                        file_type: file.type,
+                    });
+                }
+            } catch (e) {
+                console.error(e);
+                alert(t("imageUploadErrorGeneric"));
             }
+            event.target.value = "";
+        };
+        reader.onerror = () => {
+            console.error("FileReader error", reader.error);
+            alert(t("imageUploadErrorGeneric"));
+            event.target.value = "";
         };
         reader.readAsDataURL(file);
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 px-3 py-6 text-slate-900 page-shell sm:px-4 sm:py-10">
-            <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 sm:gap-6">
-                <header className="flex flex-col gap-2">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                        <h1 className="min-w-0 flex-1 text-xl font-semibold tracking-tight sm:text-2xl md:text-3xl">{t("title")}</h1>
-                        <LocaleSwitcher />
-                    </div>
-                    <p className="max-w-2xl text-[13px] leading-relaxed text-slate-600 sm:text-sm md:text-base">{t("subtitle")}</p>
-                    <p className="mt-2 max-w-2xl text-[12px] leading-relaxed text-slate-500 sm:text-[13px]">{t("introShort")}</p>
+        <div className="min-h-screen bg-slate-50 text-slate-900 page-shell">
+            <Header showGallery={isGalleryEnabled} />
+
+            <ShareCardModal
+                open={shareModalOpen}
+                onClose={() => setShareModalOpen(false)}
+                caption={shareCaption}
+                onCaptionChange={setShareCaption}
+                onSubmit={() => handleShareToGallery(shareCaption)}
+                loading={shareLoading}
+                mode="caption-only"
+            />
+
+            <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-3 py-6 sm:gap-6 sm:px-4 sm:py-8">
+                <section className="flex flex-col gap-2" aria-label="Intro">
+                    <p className="max-w-2xl text-[13px] leading-relaxed text-slate-600 sm:text-sm md:text-base">
+                        {t("subtitle")}
+                    </p>
+                    <p className="mt-2 max-w-2xl text-[12px] leading-relaxed text-slate-500 sm:text-[13px]">
+                        {t("introShort")}
+                    </p>
                     <div className="mt-3 max-w-2xl rounded-xl border border-slate-200/80 bg-slate-50/50 px-3 py-2.5 text-[11px] text-slate-600 sm:text-xs">
                         <p className="font-medium text-slate-700">{t("tipsTitle")}</p>
                         <ul className="mt-1.5 list-disc space-y-0.5 pl-4">
@@ -168,7 +255,9 @@ export default function Home() {
                         className="mt-2 flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-700"
                         aria-expanded={useMethodOpen}
                     >
-                        <span className={useMethodOpen ? "rotate-90" : ""} aria-hidden>▸</span>
+                        <span className={useMethodOpen ? "rotate-90" : ""} aria-hidden>
+                            ▸
+                        </span>
                         {useMethodOpen ? t("howToUseToggleClose") : t("howToUseToggle")}
                     </button>
                     {useMethodOpen && (
@@ -181,7 +270,42 @@ export default function Home() {
                             </ol>
                         </div>
                     )}
-                </header>
+                    {/* 소개 · FAQ: 접었다 펼치기 */}
+                    <div className="mt-4 border-t border-slate-200 pt-4">
+                        <button
+                            type="button"
+                            onClick={() => setLearnMoreOpen((o) => !o)}
+                            className="flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-700"
+                            aria-expanded={learnMoreOpen}
+                        >
+                            <span className={learnMoreOpen ? "rotate-90" : ""} aria-hidden>
+                                ▸
+                            </span>
+                            {learnMoreOpen ? t("learnMoreClose") : t("learnMore")}
+                        </button>
+                        {learnMoreOpen && (
+                            <div className="mt-4 space-y-6 text-slate-600">
+                                <div>
+                                    <h3 className="mb-1.5 text-sm font-semibold text-slate-900">{t("aboutTitle")}</h3>
+                                    <p className="text-[13px] leading-relaxed">{t("aboutBody")}</p>
+                                </div>
+                                <div>
+                                    <h3 className="mb-3 text-sm font-semibold text-slate-900">{t("faqTitle")}</h3>
+                                    <dl className="space-y-3">
+                                        {([1, 2, 3, 4, 5, 6] as const).map((n) => (
+                                            <div key={n}>
+                                                <dt className="text-[13px] font-medium text-slate-800">{t(`faqQ${n}`)}</dt>
+                                                <dd className="mt-0.5 text-[12px] leading-relaxed text-slate-600">
+                                                    {t(`faqA${n}`)}
+                                                </dd>
+                                            </div>
+                                        ))}
+                                    </dl>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </section>
 
                 <main className="grid gap-5 sm:gap-6 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1.2fr)]">
                     {/* 폼 영역 */}
@@ -191,6 +315,11 @@ export default function Home() {
                         </h2>
 
                         <div className="flex flex-col gap-4">
+                            <Field
+                                label={t("titleLabel")}
+                                value={form.title ?? ""}
+                                onChange={(v) => handleChange("title", v)}
+                            />
                             <Field
                                 label={t("textMainLabel")}
                                 value={form.textMain}
@@ -485,7 +614,7 @@ export default function Home() {
                             />
                         </div>
 
-                        <div className="flex justify-end gap-2">
+                        <div className="flex flex-wrap justify-end gap-2">
                             <button
                                 type="button"
                                 onClick={handleDownloadPng}
@@ -493,6 +622,15 @@ export default function Home() {
                             >
                                 <span>{t("downloadBtn")}</span>
                             </button>
+                            {isGalleryEnabled && (
+                                <button
+                                    type="button"
+                                    onClick={handleOpenShareModal}
+                                    className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-2 rounded-full border border-slate-300 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-400 hover:bg-slate-50 active:translate-y-0"
+                                >
+                                    <span>{t("shareToGallery")}</span>
+                                </button>
+                            )}
                         </div>
 
                         <p className="text-xs leading-relaxed text-slate-500 sm:text-[13px]">{t("disclaimer")}</p>
@@ -501,38 +639,6 @@ export default function Home() {
 
                 {/* 구글 에드센스: 콘텐츠 아래 배치. 승인 후 adSlot을 광고 단위 ID로 교체 */}
                 <AdBanner adSlot="REPLACE_WITH_YOUR_SLOT_ID" className="my-4" />
-
-                {/* 소개 · FAQ: 접었다 펼치기 */}
-                <div className="border-t border-slate-200 pt-6">
-                    <button
-                        type="button"
-                        onClick={() => setLearnMoreOpen((o) => !o)}
-                        className="flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-700"
-                        aria-expanded={learnMoreOpen}
-                    >
-                        <span className={learnMoreOpen ? "rotate-90" : ""} aria-hidden>▸</span>
-                        {learnMoreOpen ? t("learnMoreClose") : t("learnMore")}
-                    </button>
-                    {learnMoreOpen && (
-                        <div className="mt-4 space-y-6 text-slate-600">
-                            <div>
-                                <h3 className="mb-1.5 text-sm font-semibold text-slate-900">{t("aboutTitle")}</h3>
-                                <p className="text-[13px] leading-relaxed">{t("aboutBody")}</p>
-                            </div>
-                            <div>
-                                <h3 className="mb-3 text-sm font-semibold text-slate-900">{t("faqTitle")}</h3>
-                                <dl className="space-y-3">
-                                    {([1, 2, 3, 4, 5, 6] as const).map((n) => (
-                                        <div key={n}>
-                                            <dt className="text-[13px] font-medium text-slate-800">{t(`faqQ${n}`)}</dt>
-                                            <dd className="mt-0.5 text-[12px] leading-relaxed text-slate-600">{t(`faqA${n}`)}</dd>
-                                        </div>
-                                    ))}
-                                </dl>
-                            </div>
-                        </div>
-                    )}
-                </div>
             </div>
         </div>
     );
@@ -821,8 +927,11 @@ function CardPreview({
                     <Image
                         src={form.imageDataUrl as string}
                         alt={tr.altBackground}
+                        width={380}
+                        height={676}
                         className="absolute inset-0 h-full w-full object-cover"
                         style={{ zIndex: 0 }}
+                        unoptimized
                     />
                 )}
 

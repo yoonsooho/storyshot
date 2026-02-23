@@ -25,8 +25,11 @@ StoryShot은 **사진 + 텍스트로 인스타 스토리/카카오톡 프로필/
 -   **PNG 다운로드**
     -   html-to-image 를 사용해 카드 영역을 PNG 파일(`story-card.png`)로 저장
     -   저장한 이미지를 그대로 인스타/카톡/블로그 등에 업로드해서 사용 가능
+-   **갤러리 공유 (Supabase)**
+    -   Supabase 설정 시, 만든 카드를 갤러리에 공유하고 다른 사람 카드를 볼 수 있음
+    -   무료 플랜: Storage 1GB, 파일당 50MB 이하 → PNG 카드 업로드에 충분
 
-모든 동작은 **클라이언트 사이드에서만 수행**되며, 업로드한 이미지/입력한 텍스트는 서버에 저장되지 않습니다.
+메인 카드 만들기·다운로드는 **클라이언트 사이드에서만** 동작하며, 갤러리 기능을 쓰지 않으면 입력/이미지는 서버에 저장되지 않습니다.
 
 ---
 
@@ -193,6 +196,29 @@ export function AdBanner({ adSlot }: { adSlot: string }) {
 ```
 
 -   실제 운영 시에는 AdSense에서 발급된 **광고 단위 슬롯 ID** 를 `adSlot`에 전달하여 배너를 노출합니다.
+
+---
+
+### 갤러리 (Supabase) 설정
+
+갤러리 공유 기능을 쓰려면 [Supabase](https://supabase.com) 무료 프로젝트를 만들고 아래를 진행하세요.
+
+1. **프로젝트 생성**  
+   대시보드에서 새 프로젝트 생성 후, **Settings → API** 에서  
+   - **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`  
+   - **anon public** 키 → `NEXT_PUBLIC_SUPABASE_ANON_KEY`  
+   로 복사해 `.env.local`에 넣습니다. (참고: `.env.example`)
+
+2. **DB·Storage 설정**  
+   **SQL Editor**에서 `docs/supabase-setup.sql` 내용을 그대로 실행합니다.  
+   - `shared_cards` 테이블 생성 및 RLS  
+   - `card-images` 스토리지 버킷 및 정책 (또는 Storage 메뉴에서 버킷을 수동 생성 후 정책만 SQL로 추가)
+
+3. **동작**  
+   - 환경 변수가 있으면 메인 페이지에 **갤러리에 공유** 버튼과 **갤러리** 링크가 보입니다.  
+   - 공유 시 카드 PNG가 Storage에 올라가고 `shared_cards`에 한 줄이 추가되며, `/ko/gallery`(또는 `/en/gallery`)에서 목록을 볼 수 있습니다.
+
+Supabase 무료 플랜: Storage 1GB, 파일당 50MB 이하이면 이미지 업로드 가능합니다.
 
 ---
 
