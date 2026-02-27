@@ -1,17 +1,17 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import * as htmlToImage from "html-to-image";
 import { useTranslations } from "next-intl";
 import type { StoryFormState, GradientId, CardAspectId, MoodId } from "@/components/StoryCardPreview";
 import { DEFAULT_POSITIONS, DEFAULT_WIDTHS } from "@/components/StoryCardPreview";
-import { AdBanner } from "@/components/AdBanner";
 import { Header } from "@/components/Header";
 import { ShareCardModal } from "@/components/ShareCardModal";
+import { AdBanner } from "@/components/AdBanner";
 import { trackEvent } from "@/lib/analytics";
 import { uploadCardToGallery } from "@/lib/supabase/upload";
 import { isGalleryEnabled } from "@/lib/supabase/client";
-import Image from "next/image";
 
 const initialState: StoryFormState = {
     title: "",
@@ -191,15 +191,14 @@ export default function Home() {
         reader.onload = () => {
             try {
                 if (typeof reader.result === "string") {
-                    setForm(
-                        (prev) =>
-                            ({
-                                ...prev,
-                                backgroundType: "image",
-                                imageDataUrl: reader.result,
-                                imageFileName: file.name,
-                            } as StoryFormState)
-                    );
+                    setForm((prev: StoryFormState) => {
+                        return {
+                            ...prev,
+                            backgroundType: "image",
+                            imageDataUrl: reader.result as string,
+                            imageFileName: file.name,
+                        };
+                    });
                     trackEvent("upload_background_image", {
                         file_name: file.name,
                         file_type: file.type,
@@ -916,10 +915,11 @@ function CardPreview({
     return (
         <div
             ref={cardRef}
-            className="relative w-full overflow-hidden rounded-[32px] shadow-md"
+            className="relative w-full overflow-hidden shadow-md"
             style={{
                 background: gradientBackground,
-                border: "1px solid rgba(15,23,42,0.4)",
+                border: "none",
+                borderRadius: "32px",
                 aspectRatio,
                 maxWidth: isLandscape ? "520px" : "380px",
             }}
