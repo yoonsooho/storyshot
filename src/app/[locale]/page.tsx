@@ -90,7 +90,7 @@ export default function Home() {
             const dataUrl = await htmlToImage.toPng(target, {
                 cacheBust: true,
                 pixelRatio: window.devicePixelRatio || 1,
-                backgroundColor: "#ffffff",
+                backgroundColor: "transparent",
                 filter: (node) => {
                     if (node instanceof Element && node.closest?.("[data-card-export-ignore]")) return false;
                     return true;
@@ -140,7 +140,7 @@ export default function Home() {
             const dataUrl = await htmlToImage.toPng(target, {
                 cacheBust: true,
                 pixelRatio: window.devicePixelRatio || 1,
-                backgroundColor: "#ffffff",
+                backgroundColor: "transparent",
                 filter: (node) => {
                     if (node instanceof Element && node.closest?.("[data-card-export-ignore]")) return false;
                     return true;
@@ -294,7 +294,9 @@ export default function Home() {
                                     <dl className="space-y-3">
                                         {([1, 2, 3, 4, 5, 6] as const).map((n) => (
                                             <div key={n}>
-                                                <dt className="text-[13px] font-medium text-slate-800">{t(`faqQ${n}`)}</dt>
+                                                <dt className="text-[13px] font-medium text-slate-800">
+                                                    {t(`faqQ${n}`)}
+                                                </dt>
                                                 <dd className="mt-0.5 text-[12px] leading-relaxed text-slate-600">
                                                     {t(`faqA${n}`)}
                                                 </dd>
