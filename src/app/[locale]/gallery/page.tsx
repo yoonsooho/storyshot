@@ -6,7 +6,7 @@ import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { Header } from "@/components/Header";
 import { ShareCardModal } from "@/components/ShareCardModal";
-import { CommonModal } from "@/components/CommonModal";
+import { CommonModal } from "@/components/common/CommonModal";
 import { supabase, isGalleryEnabled, type SharedCard } from "@/lib/supabase/client";
 import { uploadCardToGalleryFromFile } from "@/lib/supabase/upload";
 
@@ -186,10 +186,17 @@ export default function GalleryPage() {
                     onFileChange={setShareFile}
                 />
 
-                <CommonModal open={!!detailCard} onClose={() => setDetailCard(null)} ariaLabelledBy="detail-modal-title">
+                <CommonModal
+                    open={!!detailCard}
+                    onClose={() => setDetailCard(null)}
+                    ariaLabelledBy="detail-modal-title"
+                >
                     {detailCard && (
                         <div className="flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
-                            <div className="flex min-h-0 shrink-0 items-center justify-center overflow-hidden bg-slate-100 p-3" style={{ maxHeight: "50vh" }}>
+                            <div
+                                className="flex min-h-0 shrink-0 items-center justify-center overflow-hidden bg-slate-100 p-3"
+                                style={{ maxHeight: "50vh" }}
+                            >
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
                                     src={detailCard.image_url}
@@ -204,20 +211,31 @@ export default function GalleryPage() {
                                         <>
                                             {title ? (
                                                 <div>
-                                                    <p id="detail-modal-title" className="text-xs font-medium text-slate-500">
+                                                    <p
+                                                        id="detail-modal-title"
+                                                        className="text-xs font-medium text-slate-500"
+                                                    >
                                                         {t("detailModalTitle")}
                                                     </p>
-                                                    <p className="mt-0.5 text-base font-semibold text-slate-900">{title}</p>
+                                                    <p className="mt-0.5 text-base font-semibold text-slate-900">
+                                                        {title}
+                                                    </p>
                                                 </div>
                                             ) : null}
                                             {body ? (
                                                 <div>
-                                                    <p className="text-xs font-medium text-slate-500">{t("detailModalBody")}</p>
-                                                    <p className="mt-0.5 whitespace-pre-wrap text-sm text-slate-700">{body}</p>
+                                                    <p className="text-xs font-medium text-slate-500">
+                                                        {t("detailModalBody")}
+                                                    </p>
+                                                    <p className="mt-0.5 whitespace-pre-wrap text-sm text-slate-700">
+                                                        {body}
+                                                    </p>
                                                 </div>
                                             ) : null}
                                             {!title && !body && detailCard.caption ? (
-                                                <p className="whitespace-pre-wrap text-sm text-slate-700">{detailCard.caption}</p>
+                                                <p className="whitespace-pre-wrap text-sm text-slate-700">
+                                                    {detailCard.caption}
+                                                </p>
                                             ) : null}
                                         </>
                                     );
@@ -251,9 +269,14 @@ export default function GalleryPage() {
                     <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
                         {cards.map((card) => {
                             const { title, body } = parseCaption(card.caption);
-                            const summary = title ? `${title} ${body ? " · " + body.slice(0, 30) + (body.length > 30 ? "…" : "") : ""}` : (card.caption ?? "").slice(0, 60);
+                            const summary = title
+                                ? `${title} ${body ? " · " + body.slice(0, 30) + (body.length > 30 ? "…" : "") : ""}`
+                                : (card.caption ?? "").slice(0, 60);
                             return (
-                                <li key={card.id} className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                                <li
+                                    key={card.id}
+                                    className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
+                                >
                                     <button
                                         type="button"
                                         onClick={() => setDetailCard(card)}
@@ -269,7 +292,7 @@ export default function GalleryPage() {
                                                 unoptimized
                                             />
                                         </span>
-                                        {(title || body || card.caption) ? (
+                                        {title || body || card.caption ? (
                                             <p className="line-clamp-2 p-2 text-xs text-slate-600 sm:p-3 sm:text-sm">
                                                 {summary || " "}
                                             </p>
@@ -284,4 +307,3 @@ export default function GalleryPage() {
         </div>
     );
 }
-

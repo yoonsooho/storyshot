@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { CommonModal } from "@/components/CommonModal";
+import { CommonModal } from "@/components/common/CommonModal";
 
 type ShareCardModalProps = {
     open: boolean;

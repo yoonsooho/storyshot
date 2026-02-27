@@ -32,9 +32,8 @@ export function CommonModal({ open, onClose, children, ariaLabelledBy, overlayCl
             aria-labelledby={ariaLabelledBy}
             onClick={onClose}
         >
-            <div onClick={(e) => e.stopPropagation()}>{children}</div>
+            {children}
         </div>,
         document.body
     );
 }
-
