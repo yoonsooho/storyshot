@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { Header } from "@/components/Header";
 import { ShareCardModal } from "@/components/ShareCardModal";
+import { CommonModal } from "@/components/CommonModal";
 import { supabase, isGalleryEnabled, type SharedCard } from "@/lib/supabase/client";
 import { uploadCardToGalleryFromFile } from "@/lib/supabase/upload";
 
@@ -185,18 +186,9 @@ export default function GalleryPage() {
                     onFileChange={setShareFile}
                 />
 
-                {detailCard ? (
-                    <div
-                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
-                        role="dialog"
-                        aria-modal="true"
-                        aria-labelledby="detail-modal-title"
-                        onClick={() => setDetailCard(null)}
-                    >
-                        <div
-                            className="flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-white shadow-xl"
-                            onClick={(e) => e.stopPropagation()}
-                        >
+                <CommonModal open={!!detailCard} onClose={() => setDetailCard(null)} ariaLabelledBy="detail-modal-title">
+                    {detailCard && (
+                        <div className="flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
                             <div className="flex min-h-0 shrink-0 items-center justify-center overflow-hidden bg-slate-100 p-3" style={{ maxHeight: "50vh" }}>
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
@@ -248,8 +240,8 @@ export default function GalleryPage() {
                                 </button>
                             </div>
                         </div>
-                    </div>
-                ) : null}
+                    )}
+                </CommonModal>
 
                 {cards.length === 0 ? (
                     <p className="rounded-lg border border-slate-200 bg-white p-6 text-center text-slate-500">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { CommonModal } from "@/components/CommonModal";
 
 type ShareCardModalProps = {
     open: boolean;
@@ -30,13 +31,13 @@ export function ShareCardModal({
     const t = useTranslations("home");
     const tGallery = useTranslations("gallery");
 
-    if (!open) return null;
-
     const modalTitle = mode === "caption-only" ? t("shareModalTitle") : tGallery("shareModalTitle");
     const titleLabel = mode === "caption-only" ? t("shareModalTitleLabel") : tGallery("shareModalTitleLabel");
     const bodyLabel = mode === "caption-only" ? t("shareModalBodyLabel") : tGallery("shareModalBodyLabel");
-    const titlePlaceholder = mode === "caption-only" ? t("shareModalTitlePlaceholder") : tGallery("shareModalTitlePlaceholder");
-    const bodyPlaceholder = mode === "caption-only" ? t("shareModalBodyPlaceholder") : tGallery("shareModalBodyPlaceholder");
+    const titlePlaceholder =
+        mode === "caption-only" ? t("shareModalTitlePlaceholder") : tGallery("shareModalTitlePlaceholder");
+    const bodyPlaceholder =
+        mode === "caption-only" ? t("shareModalBodyPlaceholder") : tGallery("shareModalBodyPlaceholder");
 
     const canSubmit = mode === "caption-only" ? true : !!file;
 
@@ -51,17 +52,8 @@ export function ShareCardModal({
     };
 
     return (
-        <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="share-modal-title"
-            onClick={onClose}
-        >
-            <div
-                className="w-full max-w-md rounded-2xl bg-white p-5 shadow-xl sm:p-6"
-                onClick={(e) => e.stopPropagation()}
-            >
+        <CommonModal open={open} onClose={onClose} ariaLabelledBy="share-modal-title">
+            <div className="w-full max-w-md rounded-2xl bg-white p-5 shadow-xl sm:p-6">
                 <h2 id="share-modal-title" className="text-lg font-semibold text-slate-900">
                     {modalTitle}
                 </h2>
@@ -87,7 +79,10 @@ export function ShareCardModal({
 
                 <div className="mt-4 space-y-4">
                     <div>
-                        <label htmlFor="share-caption-title" className="mb-1.5 block text-sm font-medium text-slate-700">
+                        <label
+                            htmlFor="share-caption-title"
+                            className="mb-1.5 block text-sm font-medium text-slate-700"
+                        >
                             {titleLabel}
                         </label>
                         <input
@@ -132,6 +127,6 @@ export function ShareCardModal({
                     </button>
                 </div>
             </div>
-        </div>
+        </CommonModal>
     );
 }
