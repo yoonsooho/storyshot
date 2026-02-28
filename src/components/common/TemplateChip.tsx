@@ -1,6 +1,8 @@
 import React from "react";
+import type { GradientId } from "@/types/StoryCardPreview";
 
 export interface TemplateChipProps {
+  id?: GradientId;
   label: string;
   description: string;
   active: boolean;
@@ -12,7 +14,7 @@ export function TemplateChip({ label, description, active, onClick }: TemplateCh
     <button
       type="button"
       onClick={onClick}
-      className={`flex min-w-[120px] flex-col items-start rounded-xl border px-3 py-2 text-left text-xs sm:text-sm transition ${
+      className={`focus-ring flex min-h-[44px] min-w-[120px] flex-col justify-center rounded-xl border px-3 py-2.5 text-left interact-scale sm:min-h-0 ${
         active
           ? "border-slate-900 bg-slate-900 text-slate-50 shadow-sm"
           : "border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50"

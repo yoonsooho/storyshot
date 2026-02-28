@@ -222,6 +222,103 @@ Supabase 무료 플랜: Storage 1GB, 파일당 50MB 이하이면 이미지 업�
 
 ---
 
+### 갤러리 리스트 가상화 및 사용 라이브러리
+
+갤러리(`/ko/gallery`, `/en/gallery`)는 카드가 많아져도 **DOM 개수를 줄이기 위해 가상화**를 적용했고, **무한 스크롤**로 다음 페이지를 불러옵니다. 스크롤은 **브라우저 창(문서) 기준**으로만 동작해, 내부에 별도 스크롤 영역이 없습니다.
+
+#### 1. @tanstack/react-virtual (`useWindowVirtualizer`)
+
+- **역할**: 스크롤은 문서 전체로 하고, **보이는 행만** DOM에 그려서 성능을 유지합니다. 스크롤을 내리면 위쪽 행은 DOM에서 사라지고, 아래쪽 행만 새로 그려집니다.
+- **사용 위치**: `src/app/[locale]/gallery/page.tsx`
+
+**주요 옵션**
+
+| 옵션 | 의미 |
+|------|------|
+| `count` | 가상화할 행 개수 (`rowCount`) |
+| `estimateSize()` | 한 행의 예상 높이(px). 여기서는 560 |
+| `overscan` | 보이는 영역 밖에 몇 행을 더 그릴지 (기본 2). 스크롤 시 깜빡임 감소 |
+| `scrollMargin` | 리스트가 문서 맨 위에서 얼마나 아래에 있는지(px). 헤더·인트로 높이 반영 |
+
+**주요 메서드**
+
+| 메서드 | 의미 |
+|--------|------|
+| `getTotalSize()` | 전체 리스트 높이. 이 값으로 컨테이너 높이를 잡아 페이지 세로 스크롤을 만듦 |
+| `getVirtualItems()` | **현재 뷰포트에 들어오는 행만** 담은 배열. 각 항목에 `key`, `index`, `start`, `size` 등 포함 |
+
+**코드 사용 예**
+
+```tsx
+const rowVirtualizer = useWindowVirtualizer({
+    count: rowCount,
+    estimateSize: () => DEFAULT_ROW_HEIGHT, // 560
+    overscan: 2,
+    scrollMargin: scrollMargin,
+});
+
+// 컨테이너 높이 = 전체 높이 + sentinel 영역
+<div style={{ height: rowVirtualizer.getTotalSize() + SENTINEL_HEIGHT, position: "relative" }}>
+    {rowVirtualizer.getVirtualItems().map((virtualRow) => (
+        <div
+            key={virtualRow.key}
+            style={{
+                position: "absolute",
+                transform: `translateY(${virtualRow.start - scrollMargin}px)`,
+                height: virtualRow.size,
+            }}
+        >
+            <GalleryGridRow index={virtualRow.index} ... />
+        </div>
+    ))}
+</div>
+```
+
+- `scrollMargin`은 갤러리 섹션 ref의 `getBoundingClientRect().top + window.scrollY`로 한 번 잡고, `virtualRow.start - scrollMargin`으로 **문서 좌표 → 컨테이너 기준 Y**로 변환해 배치합니다.
+
+#### 2. react-intersection-observer (`useInView`)
+
+- **역할**: 리스트 **맨 아래 sentinel** div가 화면에 들어오면 `inView`가 true가 되고, 이때 다음 페이지를 fetch해서 **무한 스크롤**을 구현합니다.
+- **사용 위치**: `src/app/[locale]/gallery/page.tsx`
+
+**주요 옵션**
+
+| 옵션 | 의미 |
+|------|------|
+| `ref` | 감시할 DOM에 붙이는 ref. 이 요소가 보이면 `inView`가 true |
+| `inView` | ref가 붙은 요소가 현재 보이는지 여부 (boolean) |
+| `rootMargin` | 뷰포트 확장. `"200px 0px"`면 아래쪽 200px 전에 미리 트리거 |
+| `threshold` | 얼마나 보여야 “보인다”로 할지. 0이면 1px만 보여도 true |
+
+**코드 사용 예**
+
+```tsx
+const { ref: loadMoreRef, inView } = useInView({
+    rootMargin: "200px 0px",
+    threshold: 0,
+});
+
+// 리스트 맨 아래에 보이지 않는 sentinel div
+<div ref={loadMoreRef} style={{ position: "absolute", top: rowVirtualizer.getTotalSize(), height: SENTINEL_HEIGHT }} />
+
+// inView가 true일 때 다음 페이지 로드
+useEffect(() => {
+    if (!inView || !hasMore || isFetchingMore) return;
+    fetchCards(page + 1, true);
+}, [inView, hasMore, isFetchingMore, page, fetchCards]);
+```
+
+#### 3. 전체 흐름 요약
+
+1. **데이터**: `cards`, `rowCount`, `hasMore`, `page`로 “지금까지 불러온 카드”와 “다음 페이지 존재 여부” 관리.
+2. **가상화**: `useWindowVirtualizer`에 `rowCount`, `estimateSize`, `scrollMargin`을 넘겨서, 문서 스크롤에 맞춰 `getVirtualItems()`로 “지금 그릴 행”만 받음.
+3. **레이아웃**: 높이 `getTotalSize() + SENTINEL_HEIGHT`인 컨테이너를 두고, 그 안에 `getVirtualItems()` 결과만 `translateY(virtualRow.start - scrollMargin)`으로 배치.
+4. **무한 스크롤**: 리스트 맨 아래 sentinel에 `useInView`의 ref를 달고, `inView`가 true일 때만 `fetchCards(next, true)` 호출.
+
+이렇게 **@tanstack/react-virtual**로 “어떤 행을 어디에 그릴지”를 결정하고, **react-intersection-observer**로 “언제 다음 페이지를 불러올지”를 결정하는 구조입니다.
+
+---
+
 ### 로컬 개발
 
 ```bash

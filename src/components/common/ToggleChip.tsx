@@ -11,7 +11,7 @@ export function ToggleChip({ active, label, onClick }: ToggleChipProps) {
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs sm:text-sm transition ${
+      className={`focus-ring interact-scale inline-flex min-h-[44px] items-center justify-center gap-1 rounded-full border px-4 py-2.5 ${
         active
           ? "border-slate-900 bg-slate-900 text-slate-50 shadow-sm"
           : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
