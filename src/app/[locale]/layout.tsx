@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { Footer } from "@/components/Footer";
 import type { Metadata } from "next";
+import { Header } from "@/components/Header";
 
 /** Cloudflare Pages: non-static routes must use Edge Runtime */
 export const runtime = "edge";
@@ -30,7 +31,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         description,
         keywords:
             locale === "ko"
-                ? ["StoryShot", "스토리샷", "인스타 스토리 카드", "카카오톡 프로필", "텍스트 카드 생성기", "오늘의 한 줄"]
+                ? [
+                      "StoryShot",
+                      "스토리샷",
+                      "인스타 스토리 카드",
+                      "카카오톡 프로필",
+                      "텍스트 카드 생성기",
+                      "오늘의 한 줄",
+                  ]
                 : ["StoryShot", "Instagram story", "story card", "KakaoTalk", "card maker"],
         alternates: { canonical: `/${locale}` },
         robots: { index: true, follow: true },
@@ -54,6 +62,7 @@ export default async function LocaleLayout({ children, params }: Props) {
     return (
         <NextIntlClientProvider messages={messages} locale={locale}>
             <div className="flex min-h-screen flex-col">
+                <Header />
                 {children}
                 <Footer />
             </div>

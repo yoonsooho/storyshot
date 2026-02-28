@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import * as htmlToImage from "html-to-image";
 import { useTranslations } from "next-intl";
-import type { StoryFormState, GradientId, CardAspectId, MoodId } from "@/components/StoryCardPreview";
-import { DEFAULT_POSITIONS, DEFAULT_WIDTHS } from "@/components/StoryCardPreview";
+import type { StoryFormState, GradientId, CardAspectId, MoodId } from "@/types/StoryCardPreview";
+import { DEFAULT_POSITIONS, DEFAULT_WIDTHS } from "@/types/StoryCardPreview";
 import { Header } from "@/components/Header";
 import { ShareCardModal } from "@/components/ShareCardModal";
 import { AdBanner } from "@/components/AdBanner";
@@ -220,8 +220,6 @@ export default function Home() {
 
     return (
         <div className="min-h-screen bg-slate-50 text-slate-900 page-shell">
-            <Header showGallery={isGalleryEnabled} />
-
             <ShareCardModal
                 open={shareModalOpen}
                 onClose={() => setShareModalOpen(false)}
@@ -251,10 +249,15 @@ export default function Home() {
                     <button
                         type="button"
                         onClick={() => setUseMethodOpen((o) => !o)}
-                        className="mt-2 flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-700"
+                        className="focus-ring interact-scale mt-2 flex items-center gap-1.5 rounded-lg px-1 py-0.5 text-xs font-medium text-slate-500 transition-colors hover:text-slate-700"
                         aria-expanded={useMethodOpen}
                     >
-                        <span className={useMethodOpen ? "rotate-90" : ""} aria-hidden>
+                        <span
+                            className={`inline-block transition-transform duration-200 ${
+                                useMethodOpen ? "rotate-90" : ""
+                            }`}
+                            aria-hidden
+                        >
                             ▸
                         </span>
                         {useMethodOpen ? t("howToUseToggleClose") : t("howToUseToggle")}
@@ -274,10 +277,15 @@ export default function Home() {
                         <button
                             type="button"
                             onClick={() => setLearnMoreOpen((o) => !o)}
-                            className="flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-700"
+                            className="focus-ring interact-scale flex items-center gap-1.5 rounded-lg px-1 py-0.5 text-xs font-medium text-slate-500 transition-colors hover:text-slate-700"
                             aria-expanded={learnMoreOpen}
                         >
-                            <span className={learnMoreOpen ? "rotate-90" : ""} aria-hidden>
+                            <span
+                                className={`inline-block transition-transform duration-200 ${
+                                    learnMoreOpen ? "rotate-90" : ""
+                                }`}
+                                aria-hidden
+                            >
                                 ▸
                             </span>
                             {learnMoreOpen ? t("learnMoreClose") : t("learnMore")}
@@ -316,11 +324,6 @@ export default function Home() {
                         </h2>
 
                         <div className="flex flex-col gap-4">
-                            <Field
-                                label={t("titleLabel")}
-                                value={form.title ?? ""}
-                                onChange={(v) => handleChange("title", v)}
-                            />
                             <Field
                                 label={t("textMainLabel")}
                                 value={form.textMain}
@@ -379,7 +382,7 @@ export default function Home() {
                                             }
                                             value={form.moodText ?? ""}
                                             onChange={(e) => handleChange("moodText", e.target.value)}
-                                            className="min-h-[44px] rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 shadow-inner shadow-slate-100 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-200 sm:h-9 sm:py-0"
+                                            className="input-focus-ring min-h-[44px] rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 shadow-inner shadow-slate-100 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-200 focus-ring sm:h-9 sm:py-0"
                                         />
                                     </label>
                                     <div className="flex flex-col gap-1">
@@ -392,7 +395,7 @@ export default function Home() {
                                                     onClick={() =>
                                                         handleChange("moodEmoji", form.moodEmoji === emoji ? "" : emoji)
                                                     }
-                                                    className={`flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border text-lg transition sm:h-8 sm:w-8 sm:min-h-0 sm:min-w-0 ${
+                                                    className={`emoji-chip focus-ring flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border text-lg sm:h-8 sm:w-8 sm:min-h-0 sm:min-w-0 ${
                                                         (form.moodEmoji || defaultMoodEmojiFor(form.mood)) === emoji
                                                             ? "border-slate-900 bg-slate-100 ring-1 ring-slate-900"
                                                             : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
@@ -619,7 +622,7 @@ export default function Home() {
                             <button
                                 type="button"
                                 onClick={handleDownloadPng}
-                                className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-2 rounded-full border border-slate-900 bg-slate-900 px-5 py-2.5 text-sm font-medium text-slate-50 shadow-sm transition hover:-translate-y-0.5 hover:bg-black hover:shadow-md active:translate-y-0"
+                                className="interact-lift focus-ring focus-ring-dark inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-2 rounded-full border border-slate-900 bg-slate-900 px-5 py-2.5 text-sm font-medium text-slate-50 shadow-sm hover:bg-black hover:shadow-md"
                             >
                                 <span>{t("downloadBtn")}</span>
                             </button>
@@ -627,7 +630,7 @@ export default function Home() {
                                 <button
                                     type="button"
                                     onClick={handleOpenShareModal}
-                                    className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-2 rounded-full border border-slate-300 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-400 hover:bg-slate-50 active:translate-y-0"
+                                    className="interact-scale focus-ring inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-2 rounded-full border border-slate-300 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 shadow-sm hover:border-slate-400 hover:bg-slate-50"
                                 >
                                     <span>{t("shareToGallery")}</span>
                                 </button>
@@ -660,13 +663,13 @@ function Field({ label, value, onChange, textarea, rows = 3 }: FieldProps) {
             {textarea ? (
                 <textarea
                     rows={rows}
-                    className="min-h-[80px] rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 shadow-inner shadow-slate-100 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-200"
+                    className="input-focus-ring min-h-[80px] rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 shadow-inner shadow-slate-100 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-200 focus-ring"
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
                 />
             ) : (
                 <input
-                    className="min-h-[44px] rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 shadow-inner shadow-slate-100 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-200 sm:h-9 sm:py-0"
+                    className="input-focus-ring min-h-[44px] rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 shadow-inner shadow-slate-100 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-200 focus-ring sm:h-9 sm:py-0"
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
                 />
@@ -686,7 +689,7 @@ function ToggleChip({ active, label, onClick }: ToggleChipProps) {
         <button
             type="button"
             onClick={onClick}
-            className={`inline-flex min-h-[44px] items-center justify-center gap-1 rounded-full border px-4 py-2.5 transition ${
+            className={`focus-ring inline-flex min-h-[44px] items-center justify-center gap-1 rounded-full border px-4 py-2.5 interact-scale ${
                 active
                     ? "border-slate-900 bg-slate-900 text-slate-50 shadow-sm"
                     : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
@@ -710,7 +713,7 @@ function TemplateChip({ label, description, active, onClick }: TemplateChipProps
         <button
             type="button"
             onClick={onClick}
-            className={`flex min-h-[44px] min-w-[120px] flex-col justify-center rounded-xl border px-3 py-2.5 text-left transition sm:min-h-0 ${
+            className={`focus-ring flex min-h-[44px] min-w-[120px] flex-col justify-center rounded-xl border px-3 py-2.5 text-left interact-scale sm:min-h-0 ${
                 active
                     ? "border-slate-900 bg-slate-900 text-slate-50 shadow-sm"
                     : "border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50"

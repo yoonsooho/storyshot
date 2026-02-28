@@ -53,7 +53,7 @@ export function ShareCardModal({
 
     return (
         <CommonModal open={open} onClose={onClose} ariaLabelledBy="share-modal-title">
-            <div className="w-full max-w-md rounded-2xl bg-white p-5 shadow-xl sm:p-6">
+            <div className="w-full max-w-md min-w-[280px] rounded-2xl bg-white p-5 shadow-xl sm:p-6">
                 <h2 id="share-modal-title" className="text-lg font-semibold text-slate-900">
                     {modalTitle}
                 </h2>
@@ -113,7 +113,7 @@ export function ShareCardModal({
                     <button
                         type="button"
                         onClick={onClose}
-                        className="rounded-full border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                        className="interact-scale focus-ring rounded-full border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
                     >
                         {t("shareModalCancel")}
                     </button>
@@ -121,7 +121,7 @@ export function ShareCardModal({
                         type="button"
                         onClick={onSubmit}
                         disabled={loading || !canSubmit}
-                        className="rounded-full bg-slate-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-black disabled:opacity-60"
+                        className="interact-scale focus-ring rounded-full bg-slate-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-black disabled:pointer-events-none disabled:opacity-60"
                     >
                         {loading ? t("shareSending") : t("shareModalSubmit")}
                     </button>
