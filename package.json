@@ -11,7 +11,9 @@
     "test:watch": "vitest",
     "pages:build": "npx @cloudflare/next-on-pages",
     "preview": "pnpm run pages:build && wrangler pages dev",
-    "deploy": "pnpm run pages:build && wrangler pages deploy"
+    "deploy": "pnpm run pages:build && wrangler pages deploy",
+    "typecheck": "tsc --noEmit",
+    "prepare": "husky"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.47.10",
@@ -38,6 +40,7 @@
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^3.2.4",
-    "wrangler": "^4.65.0"
+    "wrangler": "^4.65.0",
+    "husky": "^9.1.7"
   }
 }
