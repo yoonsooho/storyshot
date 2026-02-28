@@ -29,7 +29,7 @@ export default async function PrivacyPage({ params }: Props) {
 
     return (
         <div className="flex min-h-screen flex-col bg-slate-50 text-slate-900">
-            <Header showGallery={isGalleryEnabled} linkTitleToHome />
+            <Header />
             <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8 sm:px-6 sm:py-10">
                 <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t("title")}</h1>
                 <p className="mt-2 text-sm text-slate-500">{t("lastUpdated")}</p>
