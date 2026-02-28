@@ -25,15 +25,17 @@ describe("CommonModal", () => {
         expect(screen.getByText("모달 내용")).toBeInTheDocument();
     });
 
-    it("calls onClose when overlay is clicked", async () => {
+    it("calls onClose when overlay is clicked", () => {
         const onClose = vi.fn();
         render(
             <CommonModal open onClose={onClose}>
                 <span>내용</span>
             </CommonModal>
         );
-        const overlay = screen.getByRole("dialog");
-        fireEvent.click(overlay);
+        const dialog = screen.getByRole("dialog");
+        // onClose는 내부 wrapper div의 onClick에 연결되어 있음 (dialog 자체가 아님)
+        const clickableOverlay = dialog.firstElementChild;
+        if (clickableOverlay) fireEvent.click(clickableOverlay);
         expect(onClose).toHaveBeenCalledTimes(1);
     });
 });
